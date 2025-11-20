@@ -8,6 +8,7 @@ import { EntryModal } from './EntryModal';
 import { SettingsModal } from './SettingsModal';
 import { HealthCheckModal } from './HealthCheckModal';
 import { CategoryModal } from './CategoryModal';
+import { AboutModal } from './AboutModal';
 import { SkeletonEntry } from './SkeletonEntry';
 import { translations } from '../i18n/locales';
 import { LanguageToggle } from './LanguageToggle';
@@ -16,7 +17,7 @@ import {
     IconSearch, IconPlus, IconLogout, IconCopy, 
     IconEye, IconEyeOff, IconFolder, IconShieldCheck, IconTrash,
     IconShieldExclamation, IconSettings, IconActivity, IconExternalLink, 
-    IconWorld, IconPencil, IconNote, IconMenu2, IconX, IconCategory
+    IconWorld, IconPencil, IconNote, IconMenu2, IconX, IconCategory, IconInfoCircle
 } from '@tabler/icons-react';
 
 export const Dashboard = () => {
@@ -28,6 +29,7 @@ export const Dashboard = () => {
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   const [isHealthOpen, setHealthOpen] = useState(false);
   const [isCatModalOpen, setCatModalOpen] = useState(false);
+  const [isAboutOpen, setAboutOpen] = useState(false);
   
   // UI State
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -359,6 +361,13 @@ export const Dashboard = () => {
             </button>
 
             <button 
+                onClick={() => { setAboutOpen(true); setMobileMenuOpen(false); }} 
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-800 rounded-lg transition"
+            >
+                <IconInfoCircle size={18} /> {t.about}
+            </button>
+
+            <button 
                 onClick={handleLogout} 
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition"
             >
@@ -582,6 +591,11 @@ export const Dashboard = () => {
       <CategoryModal
         isOpen={isCatModalOpen}
         onClose={() => setCatModalOpen(false)}
+      />
+
+      <AboutModal
+        isOpen={isAboutOpen}
+        onClose={() => setAboutOpen(false)}
       />
     </div>
   );

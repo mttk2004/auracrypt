@@ -22,6 +22,7 @@ export const translations = {
       checkEmail: "Check your email for the login link!",
       switchToSignIn: "Already have an account? Sign In",
       switchToSignUp: "Don't have an account? Sign Up",
+      aboutLink: "About & Security Architecture",
     },
     vault: {
       checking: "Syncing with Vault...",
@@ -56,6 +57,7 @@ export const translations = {
       createFirstBtn: "Create First Entry",
       settings: "Settings",
       healthCheck: "Health Check",
+      about: "About",
     },
     modal: {
       title: "Add New Entry",
@@ -133,6 +135,16 @@ export const translations = {
         exists: "Category already exists.",
         added: "Category added.",
         deleted: "Category deleted."
+    },
+    about: {
+        title: "About AuraCrypt",
+        desc: "AuraCrypt is a state-of-the-art, educational password manager built to demonstrate modern security principles in web applications.",
+        zkTitle: "What is Zero-Knowledge?",
+        zkDesc: "Zero-Knowledge architecture means that the server (Supabase) knows nothing about your data. Encryption and decryption happen entirely inside your browser (Client-side) using your Master Password. We do not store your key, so we cannot see your passwords even if we wanted to.",
+        techStack: "Technology Stack",
+        authorTitle: "About the Author",
+        contactBtn: "Contact Author",
+        followBtn: "Follow on GitHub"
     }
   },
   vn: {
@@ -157,6 +169,7 @@ export const translations = {
       checkEmail: "Kiểm tra email để lấy link đăng nhập!",
       switchToSignIn: "Đã có tài khoản? Đăng Nhập",
       switchToSignUp: "Chưa có tài khoản? Đăng Ký",
+      aboutLink: "Về AuraCrypt & Bảo Mật",
     },
     vault: {
       checking: "Đang đồng bộ dữ liệu...",
@@ -191,6 +204,7 @@ export const translations = {
       createFirstBtn: "Tạo Mục Đầu Tiên",
       settings: "Cài đặt",
       healthCheck: "Sức Khỏe Mật Khẩu",
+      about: "Giới Thiệu",
     },
     modal: {
       title: "Thêm Mục Mới",
@@ -268,6 +282,16 @@ export const translations = {
         exists: "Danh mục đã tồn tại.",
         added: "Đã thêm danh mục.",
         deleted: "Đã xóa danh mục."
+    },
+    about: {
+        title: "Giới Thiệu AuraCrypt",
+        desc: "AuraCrypt là trình quản lý mật khẩu giáo dục hiện đại, được xây dựng để minh họa các nguyên tắc bảo mật tiên tiến trong ứng dụng web.",
+        zkTitle: "Zero-Knowledge là gì?",
+        zkDesc: "Kiến trúc Zero-Knowledge nghĩa là máy chủ (Supabase) hoàn toàn không biết gì về dữ liệu của bạn. Việc mã hóa và giải mã diễn ra hoàn toàn trên trình duyệt (Client-side) bằng Mật khẩu chủ của bạn. Chúng tôi không lưu khóa, nên không thể xem mật khẩu của bạn dù có muốn.",
+        techStack: "Công Nghệ Sử Dụng",
+        authorTitle: "Về Tác Giả",
+        contactBtn: "Liên Hệ Tác Giả",
+        followBtn: "Theo dõi Github"
     }
   }
 };

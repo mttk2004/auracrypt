@@ -1,10 +1,12 @@
+
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
-import { IconShieldLock, IconLogin, IconUserPlus } from '@tabler/icons-react';
+import { IconShieldLock, IconLogin, IconUserPlus, IconInfoCircle } from '@tabler/icons-react';
 import { useStore } from '../store/useStore';
 import { translations } from '../i18n/locales';
 import { LanguageToggle } from './LanguageToggle';
 import { ThemeToggle } from './ThemeToggle';
+import { AboutModal } from './AboutModal';
 
 export const Auth = () => {
   const [loading, setLoading] = useState(false);
@@ -12,6 +14,7 @@ export const Auth = () => {
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isAboutOpen, setAboutOpen] = useState(false);
   
   const { language } = useStore();
   const t = translations[language].auth;
@@ -103,15 +106,24 @@ export const Auth = () => {
           </button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-6 text-center space-y-4">
           <button
             onClick={() => setIsSignUp(!isSignUp)}
-            className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 hover:underline transition"
+            className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 hover:underline transition block w-full"
           >
             {isSignUp ? t.switchToSignIn : t.switchToSignUp}
           </button>
+
+          <button
+            onClick={() => setAboutOpen(true)}
+            className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 flex items-center justify-center gap-1 mx-auto transition"
+          >
+            <IconInfoCircle size={14} /> {t.aboutLink}
+          </button>
         </div>
       </div>
+
+      <AboutModal isOpen={isAboutOpen} onClose={() => setAboutOpen(false)} />
     </div>
   );
 };
