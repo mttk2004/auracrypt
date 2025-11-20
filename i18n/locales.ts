@@ -59,6 +59,7 @@ export const translations = {
     modal: {
       title: "Add New Entry",
       serviceLabel: "Service Name",
+      urlLabel: "Website URL",
       categoryLabel: "Category",
       usernameLabel: "Username / Email",
       passwordLabel: "Password",
@@ -173,6 +174,7 @@ export const translations = {
     modal: {
       title: "Thêm Mục Mới",
       serviceLabel: "Tên Dịch Vụ",
+      urlLabel: "URL Trang Web",
       categoryLabel: "Danh Mục",
       usernameLabel: "Tên đăng nhập / Email",
       passwordLabel: "Mật khẩu",

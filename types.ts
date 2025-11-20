@@ -1,9 +1,11 @@
+
 export interface DatabaseEntry {
   id: string;
   user_id: string;
   service_name: string;
   username: string | null;
   category: string;
+  url: string | null; // New field
   encrypted_password: string; // Base64
   encrypted_notes: string | null; // Base64
   iv: string; // Base64
@@ -18,6 +20,7 @@ export interface DecryptedEntry extends Omit<DatabaseEntry, 'encrypted_password'
 export interface CreateEntryPayload {
   service_name: string;
   username: string;
+  url: string; // New field
   category: string;
   password: string;
   notes: string;

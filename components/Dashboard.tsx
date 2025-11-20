@@ -13,7 +13,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { 
     IconSearch, IconPlus, IconLogout, IconCopy, 
     IconEye, IconEyeOff, IconFolder, IconShieldCheck, IconTrash,
-    IconShieldExclamation, IconDatabaseImport, IconSettings, IconActivity
+    IconShieldExclamation, IconDatabaseImport, IconSettings, IconActivity, IconExternalLink, IconWorld
 } from '@tabler/icons-react';
 
 export const Dashboard = () => {
@@ -81,6 +81,7 @@ export const Dashboard = () => {
                 user_id: entry.user_id,
                 service_name: entry.service_name,
                 username: entry.username,
+                url: entry.url,
                 category: entry.category,
                 created_at: entry.created_at,
                 password,
@@ -115,6 +116,7 @@ export const Dashboard = () => {
           user_id: user.id,
           service_name: payload.service_name,
           username: payload.username,
+          url: payload.url || null,
           category: payload.category,
           encrypted_password: pwEnc.cipherText,
           iv: pwEnc.iv,
@@ -130,6 +132,7 @@ export const Dashboard = () => {
               user_id: user.id,
               service_name: payload.service_name,
               username: payload.username,
+              url: payload.url,
               category: payload.category,
               created_at: data[0].created_at,
               password: payload.password,
@@ -184,6 +187,16 @@ export const Dashboard = () => {
       }
       return t.emptyDesc;
   }
+  
+  const getFaviconUrl = (url: string | null) => {
+      if (!url) return null;
+      try {
+          const domain = new URL(url).hostname;
+          return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+      } catch (e) {
+          return null;
+      }
+  };
 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-dark-950 text-slate-900 dark:text-slate-200 transition-colors duration-300">
@@ -306,14 +319,36 @@ export const Dashboard = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                     {filteredEntries.map(entry => (
                         <div key={entry.id} className="group bg-white dark:bg-dark-900 border border-slate-200 dark:border-dark-800 rounded-xl p-5 hover:border-primary-500/50 dark:hover:border-primary-500/50 transition-all shadow-sm hover:shadow-md relative">
-                            <div className="flex justify-between items-start mb-3">
-                                <div>
-                                    <h3 className="font-bold text-slate-900 dark:text-white text-lg">{entry.service_name}</h3>
-                                    <p className="text-xs text-slate-500">{entry.username || 'No username'}</p>
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-dark-800 flex items-center justify-center shrink-0 overflow-hidden">
+                                        {getFaviconUrl(entry.url) ? (
+                                            <img src={getFaviconUrl(entry.url)!} alt="" className="w-6 h-6 object-contain" />
+                                        ) : (
+                                            <IconWorld className="text-slate-400" size={24} />
+                                        )}
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-slate-900 dark:text-white text-lg leading-tight">{entry.service_name}</h3>
+                                        <p className="text-xs text-slate-500 truncate max-w-[140px]">{entry.username || 'No username'}</p>
+                                    </div>
                                 </div>
-                                <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-dark-800 text-slate-500 dark:text-slate-400 px-2 py-1 rounded">
-                                    {entry.category}
-                                </span>
+                                <div className="flex flex-col items-end gap-1">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-dark-800 text-slate-500 dark:text-slate-400 px-2 py-1 rounded">
+                                        {entry.category}
+                                    </span>
+                                    {entry.url && (
+                                        <a 
+                                            href={entry.url} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="p-1.5 text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-500/10 rounded-lg transition"
+                                            title="Launch Website"
+                                        >
+                                            <IconExternalLink size={14} />
+                                        </a>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="bg-slate-50 dark:bg-dark-950 rounded-lg p-3 mb-3 border border-slate-200 dark:border-dark-800 flex items-center justify-between">

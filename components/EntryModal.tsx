@@ -4,7 +4,7 @@ import { CreateEntryPayload, CATEGORIES } from '../types';
 import { 
     IconX, IconDeviceFloppy, IconWand, IconRefresh, 
     IconCopy, IconCheck, IconUser, IconLock, IconWorld, 
-    IconCategory, IconNote 
+    IconCategory, IconNote, IconLink
 } from '@tabler/icons-react';
 import { useStore } from '../store/useStore';
 import { translations } from '../i18n/locales';
@@ -24,6 +24,7 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState<CreateEntryPayload>({
     service_name: '',
     username: '',
+    url: '',
     password: '',
     category: 'Other',
     notes: ''
@@ -35,7 +36,6 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
   const [includeNum, setIncludeNum] = useState(true);
   const [includeSym, setIncludeSym] = useState(true);
   const [generatedPass, setGeneratedPass] = useState('');
-  const [copied, setCopied] = useState(false);
 
   // Reset state when opening
   useEffect(() => {
@@ -43,6 +43,7 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
         setFormData({
             service_name: '',
             username: '',
+            url: '',
             password: '',
             category: 'Other',
             notes: ''
@@ -88,6 +89,15 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
   const useGeneratedPassword = () => {
       setFormData({ ...formData, password: generatedPass });
       setShowGenerator(false);
+  };
+
+  // Auto-fix URL
+  const handleUrlBlur = () => {
+      let url = formData.url.trim();
+      if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+          url = 'https://' + url;
+          setFormData({ ...formData, url });
+      }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -172,22 +182,42 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
                 </div>
             </div>
 
-            {/* Row 2: Username */}
-            <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.usernameLabel}</label>
-                <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <IconUser className="text-slate-400 group-focus-within:text-primary-500 transition" size={18} />
+            {/* Row 2: Username & URL */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.usernameLabel}</label>
+                    <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <IconUser className="text-slate-400 group-focus-within:text-primary-500 transition" size={18} />
+                        </div>
+                        <input
+                            type="text"
+                            className="w-full bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-dark-700 rounded-xl py-3 pl-10 pr-4 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition shadow-sm"
+                            value={formData.username}
+                            onChange={e => setFormData({...formData, username: e.target.value})}
+                            placeholder="username@example.com"
+                        />
                     </div>
-                    <input
-                        type="text"
-                        className="w-full bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-dark-700 rounded-xl py-3 pl-10 pr-4 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition shadow-sm"
-                        value={formData.username}
-                        onChange={e => setFormData({...formData, username: e.target.value})}
-                        placeholder="username@example.com"
-                    />
+                </div>
+
+                <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.urlLabel}</label>
+                    <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <IconLink className="text-slate-400 group-focus-within:text-primary-500 transition" size={18} />
+                        </div>
+                        <input
+                            type="text"
+                            className="w-full bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-dark-700 rounded-xl py-3 pl-10 pr-4 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition shadow-sm"
+                            value={formData.url || ''}
+                            onChange={e => setFormData({...formData, url: e.target.value})}
+                            onBlur={handleUrlBlur}
+                            placeholder="google.com"
+                        />
+                    </div>
                 </div>
             </div>
+
 
             {/* Row 3: Password & Generator */}
             <div className="space-y-1.5">
