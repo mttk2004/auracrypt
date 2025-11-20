@@ -1,3 +1,4 @@
+
 export const translations = {
   en: {
     common: {
@@ -62,6 +63,13 @@ export const translations = {
       notesLabel: "Notes (Encrypted)",
       saveBtn: "Save Entry",
       encrypting: "Encrypting...",
+      genBtn: "Generate Password",
+      usePassBtn: "Use This Password",
+      length: "Length",
+      options: "Options",
+      includeNum: "0-9 Numbers",
+      includeSym: "!@# Symbols",
+      copied: "Copied!",
     }
   },
   vn: {
@@ -127,6 +135,13 @@ export const translations = {
       notesLabel: "Ghi chú (Đã mã hóa)",
       saveBtn: "Lưu Mục",
       encrypting: "Đang mã hóa...",
+      genBtn: "Tạo Mật Khẩu",
+      usePassBtn: "Dùng Mật Khẩu Này",
+      length: "Độ dài",
+      options: "Tùy chọn",
+      includeNum: "0-9 Số",
+      includeSym: "!@# Ký tự đặc biệt",
+      copied: "Đã chép!",
     }
   }
 };
