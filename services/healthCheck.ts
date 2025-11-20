@@ -1,3 +1,4 @@
+
 import { digestSHA1 } from './cryptoUtils';
 import { DecryptedEntry } from '../types';
 
@@ -8,6 +9,7 @@ export interface HealthResult {
   isWeak: boolean;
   isReused: boolean;
   score: number; // 0-100 for individual entry
+  suggestions: string[]; // New field for specific UI feedback
 }
 
 export interface SecurityReport {
@@ -60,25 +62,61 @@ export const runSecurityScan = async (entries: DecryptedEntry[]): Promise<Securi
   let weakCount = 0;
 
   // 2. Analyze each entry
-  // We use Promise.all to parallelize HIBP requests (browser limits apply, but ok for small vaults)
   await Promise.all(entries.map(async (entry) => {
     const breachCount = await checkPwned(entry.password);
     const isBreached = breachCount > 0;
     
-    // Weakness criteria
-    const isWeak = entry.password.length < 8 || !/\d/.test(entry.password) || !/[!@#$%^&*]/.test(entry.password);
-    
+    const len = entry.password.length;
+    const hasNum = /\d/.test(entry.password);
+    const hasSym = /[!@#$%^&*(),.?":{}|<>]/.test(entry.password);
+    const hasUpper = /[A-Z]/.test(entry.password);
     const isReused = (passwordMap.get(entry.password) || 0) > 1;
 
-    // Scoring Logic (Simple)
-    let score = 100;
-    if (isBreached) score = 0;
-    else {
-      if (isReused) score -= 30;
-      if (isWeak) score -= 40;
-      if (entry.password.length < 12) score -= 10;
+    const suggestions: string[] = [];
+
+    // --- REFINED WEAKNESS LOGIC ---
+    // It is NOT weak if it is very long (>14 chars), even if it lacks numbers/symbols.
+    // It IS weak if short (<8).
+    // It IS weak if medium length (<12) AND lacks complexity.
+    
+    let isWeak = false;
+
+    if (len < 8) {
+        isWeak = true;
+        suggestions.push('suggShort');
+    } else if (len < 14) {
+        // Medium length: Require some complexity
+        if (!hasNum && !hasSym) {
+            isWeak = true;
+            suggestions.push('suggSimple');
+        }
     }
-    if (score < 0) score = 0;
+    // Length >= 14 is generally considered strong against brute force even without symbols, 
+    // unless it's a common dictionary word (which we can't check easily offline without a huge dict).
+    // But we assume length is the primary factor for entropy here.
+
+    // Scoring Logic
+    let score = 0;
+    
+    // Base score on length (up to 60 points)
+    score += Math.min(60, len * 4);
+    
+    // Complexity bonus (up to 40 points)
+    if (hasNum) score += 10;
+    if (hasSym) score += 15;
+    if (hasUpper) score += 10;
+    if (len > 14) score += 5; // Bonus for length
+
+    // Penalties
+    if (isReused) score -= 30;
+    if (isBreached) score = 0; // Immediate fail
+
+    // Cap score
+    score = Math.max(0, Math.min(100, score));
+
+    // Consistency check: If score is high, it shouldn't be marked 'Weak'
+    if (score > 60 && isWeak) isWeak = false;
+    if (score < 50 && !isWeak) isWeak = true;
 
     results[entry.id] = {
       entryId: entry.id,
@@ -86,11 +124,12 @@ export const runSecurityScan = async (entries: DecryptedEntry[]): Promise<Securi
       breachCount,
       isWeak,
       isReused,
-      score
+      score,
+      suggestions
     };
 
     if (isBreached) breachedCount++;
-    if (isReused && !isBreached) reusedCount++; // Don't double count for stats if already breached (severity hierarchy)
+    if (isReused && !isBreached) reusedCount++;
     if (isWeak && !isBreached && !isReused) weakCount++;
     
     totalScoreSum += score;

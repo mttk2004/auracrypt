@@ -105,8 +105,13 @@ export const translations = {
         safe: "Secure",
         breachedDesc: "Found in known data leaks. Change immediately!",
         reusedDesc: "Used in multiple accounts.",
-        weakDesc: "Easy to guess or crack.",
+        weakDesc: "Needs improvement.",
         noIssues: "No issues found. Great job!",
+        critical: "Critical Threats",
+        warnings: "Warnings",
+        suggShort: "Too short (min 10 chars)",
+        suggSimple: "Add numbers or symbols",
+        suggCommon: "Too common pattern",
     }
   },
   vn: {
@@ -214,8 +219,13 @@ export const translations = {
         safe: "An Toàn",
         breachedDesc: "Tìm thấy trong dữ liệu rò rỉ. Đổi ngay!",
         reusedDesc: "Được sử dụng ở nhiều tài khoản.",
-        weakDesc: "Dễ bị đoán hoặc bẻ khóa.",
+        weakDesc: "Cần cải thiện.",
         noIssues: "Không phát hiện vấn đề. Tuyệt vời!",
+        critical: "Mối Đe Dọa",
+        warnings: "Cảnh Báo",
+        suggShort: "Quá ngắn (tối thiểu 10 ký tự)",
+        suggSimple: "Thêm số hoặc ký tự đặc biệt",
+        suggCommon: "Mẫu quá phổ biến",
     }
   }
 };
