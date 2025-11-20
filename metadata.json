@@ -1,0 +1,5 @@
+{
+  "name": "AuraCrypt Web",
+  "description": "A secure, client-side encrypted password manager using Web Crypto API and Supabase.",
+  "requestFramePermissions": []
+}
