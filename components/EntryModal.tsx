@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { CreateEntryPayload, CATEGORIES } from '../types';
 import { 
     IconX, IconDeviceFloppy, IconWand, IconRefresh, 
-    IconCopy, IconCheck, IconUser, IconLock, IconWorld, 
-    IconCategory, IconNote, IconLink
+    IconCheck, IconUser, IconLock, IconWorld, 
+    IconCategory, IconNote, IconLink, IconEye, IconEyeOff
 } from '@tabler/icons-react';
 import { useStore } from '../store/useStore';
 import { translations } from '../i18n/locales';
@@ -30,6 +30,9 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
     notes: ''
   });
 
+  // UI State
+  const [showPassword, setShowPassword] = useState(false);
+  
   // Generator State
   const [showGenerator, setShowGenerator] = useState(false);
   const [genLength, setGenLength] = useState(16);
@@ -49,6 +52,7 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
             notes: ''
         });
         setShowGenerator(false);
+        setShowPassword(false);
     }
   }, [isOpen]);
 
@@ -89,6 +93,7 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
   const useGeneratedPassword = () => {
       setFormData({ ...formData, password: generatedPass });
       setShowGenerator(false);
+      setShowPassword(true); // Show password when generated
   };
 
   // Auto-fix URL
@@ -139,8 +144,9 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
           <form id="entry-form" onSubmit={handleSubmit} className="space-y-6">
             
             {/* Row 1: Service & Category */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                <div className="md:col-span-7 space-y-1.5">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                {/* Service Name (8 cols) */}
+                <div className="md:col-span-8 space-y-1.5">
                     <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.serviceLabel}</label>
                     <div className="relative group">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -158,14 +164,15 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
                     </div>
                 </div>
                 
-                <div className="md:col-span-5 space-y-1.5">
+                {/* Category (4 cols) */}
+                <div className="md:col-span-4 space-y-1.5">
                     <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.categoryLabel}</label>
                     <div className="relative group">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <IconCategory className="text-slate-400 group-focus-within:text-primary-500 transition" size={18} />
                         </div>
                         <select
-                            className="w-full bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-dark-700 rounded-xl py-3 pl-10 pr-4 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition shadow-sm appearance-none"
+                            className="w-full bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-dark-700 rounded-xl py-3 pl-10 pr-8 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition shadow-sm appearance-none truncate"
                             value={formData.category}
                             onChange={e => setFormData({...formData, category: e.target.value})}
                         >
@@ -183,8 +190,8 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
             </div>
 
             {/* Row 2: Username & URL */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-1.5">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                <div className="md:col-span-6 space-y-1.5">
                     <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.usernameLabel}</label>
                     <div className="relative group">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -200,7 +207,7 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
                     </div>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="md:col-span-6 space-y-1.5">
                     <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.urlLabel}</label>
                     <div className="relative group">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -238,13 +245,21 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
                         <IconLock className="text-slate-400 group-focus-within:text-primary-500 transition" size={18} />
                     </div>
                     <input
-                        type="text"
+                        type={showPassword ? "text" : "password"}
                         required
-                        className={`w-full bg-slate-50 dark:bg-dark-950 border rounded-xl py-3 pl-10 pr-4 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition shadow-sm ${showGenerator ? 'border-primary-500 dark:border-primary-500' : 'border-slate-200 dark:border-dark-700'}`}
+                        className={`w-full bg-slate-50 dark:bg-dark-950 border rounded-xl py-3 pl-10 pr-12 text-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition shadow-sm ${showGenerator ? 'border-primary-500 dark:border-primary-500' : 'border-slate-200 dark:border-dark-700'}`}
                         value={formData.password}
                         onChange={e => setFormData({...formData, password: e.target.value})}
                         placeholder="••••••••"
                     />
+                    <button 
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
+                        tabIndex={-1}
+                    >
+                        {showPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
+                    </button>
                 </div>
 
                 {/* Password Generator Panel */}
