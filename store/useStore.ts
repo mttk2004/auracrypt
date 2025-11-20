@@ -7,6 +7,12 @@ import { Language } from '../i18n/locales';
 
 type Theme = 'light' | 'dark';
 
+export interface ToastMessage {
+  id: string;
+  type: 'success' | 'error' | 'info';
+  message: string;
+}
+
 interface AppState {
   // Theme State
   theme: Theme;
@@ -35,6 +41,11 @@ interface AppState {
   setEntries: (entries: DecryptedEntry[]) => void;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
+
+  // Toast State
+  toasts: ToastMessage[];
+  addToast: (type: 'success' | 'error' | 'info', message: string) => void;
+  removeToast: (id: string) => void;
 
   // Actions
   initializeVaultFromStorage: () => Promise<boolean>;
@@ -83,6 +94,18 @@ export const useStore = create<AppState>((set, get) => ({
   
   isLoading: false,
   setIsLoading: (isLoading) => set({ isLoading }),
+
+  // Toast Logic
+  toasts: [],
+  addToast: (type, message) => {
+    const id = Date.now().toString();
+    set((state) => ({ toasts: [...state.toasts, { id, type, message }] }));
+    // Auto dismiss after 3 seconds
+    setTimeout(() => {
+        get().removeToast(id);
+    }, 3000);
+  },
+  removeToast: (id) => set((state) => ({ toasts: state.toasts.filter(t => t.id !== id) })),
 
   setMasterKey: async (key) => {
     const keyStr = await exportKeyToString(key);

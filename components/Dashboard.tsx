@@ -7,21 +7,28 @@ import { DecryptedEntry, CreateEntryPayload, DatabaseEntry, Category, CATEGORIES
 import { EntryModal } from './EntryModal';
 import { SettingsModal } from './SettingsModal';
 import { HealthCheckModal } from './HealthCheckModal';
+import { SkeletonEntry } from './SkeletonEntry';
 import { translations } from '../i18n/locales';
 import { LanguageToggle } from './LanguageToggle';
 import { ThemeToggle } from './ThemeToggle';
 import { 
     IconSearch, IconPlus, IconLogout, IconCopy, 
     IconEye, IconEyeOff, IconFolder, IconShieldCheck, IconTrash,
-    IconShieldExclamation, IconDatabaseImport, IconSettings, IconActivity, IconExternalLink, IconWorld, IconPencil, IconNote
+    IconShieldExclamation, IconSettings, IconActivity, IconExternalLink, 
+    IconWorld, IconPencil, IconNote, IconMenu2, IconX
 } from '@tabler/icons-react';
 
 export const Dashboard = () => {
-  const { user, masterKey, entries, setEntries, lockVault, session, language } = useStore();
+  const { user, masterKey, entries, setEntries, lockVault, session, language, addToast } = useStore();
+  
+  // Modals
   const [isModalOpen, setModalOpen] = useState(false);
   const [entryToEdit, setEntryToEdit] = useState<DecryptedEntry | null>(null);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   const [isHealthOpen, setHealthOpen] = useState(false);
+  
+  // UI State
+  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category>('All');
   const [revealedPasswords, setRevealedPasswords] = useState<Set<string>>(new Set());
@@ -30,6 +37,7 @@ export const Dashboard = () => {
   
   const t = translations[language].dashboard;
   const commonT = translations[language].common;
+  const modalT = translations[language].modal;
 
   // Fetch and Decrypt Data
   useEffect(() => {
@@ -45,6 +53,7 @@ export const Dashboard = () => {
 
       if (error) {
         console.error("Error fetching entries:", error);
+        addToast('error', "Failed to fetch data from server.");
         setIsLoadingData(false);
         return;
       }
@@ -53,27 +62,20 @@ export const Dashboard = () => {
       const decryptedList: DecryptedEntry[] = [];
       for (const entry of (data as DatabaseEntry[])) {
         try {
-            // Metadata is plaintext, sensitive data is decrypted
-            
-            // 1. Decrypt Password using the primary IV column
             const password = await decryptData(entry.encrypted_password, entry.iv, masterKey);
             
-            // 2. Decrypt Notes
             let notes = '';
             if (entry.encrypted_notes) {
                 if (entry.encrypted_notes.includes(':')) {
-                    // New Format: "IV:Ciphertext"
                     const [noteIv, noteCipher] = entry.encrypted_notes.split(':');
                     if (noteIv && noteCipher) {
                          notes = await decryptData(noteCipher, noteIv, masterKey);
                     }
                 } else {
-                    // Fallback: Try using the entry's main IV (legacy format or data)
                     try {
                         notes = await decryptData(entry.encrypted_notes, entry.iv, masterKey);
                     } catch (e) {
-                        // If fallback fails, assume empty or corrupted
-                        console.warn(`Failed to decrypt notes for entry ${entry.id} using fallback IV`);
+                        console.warn(`Failed to decrypt notes for entry ${entry.id}`);
                     }
                 }
             }
@@ -91,7 +93,6 @@ export const Dashboard = () => {
             });
         } catch (e) {
             console.error(`Failed to decrypt entry ${entry.id}`, e);
-            // We intentionally skip pushing failed entries so the UI doesn't break
         }
       }
       setEntries(decryptedList);
@@ -99,9 +100,9 @@ export const Dashboard = () => {
     };
 
     fetchEntries();
-  }, [user, masterKey, setEntries]);
+  }, [user, masterKey, setEntries, addToast]);
 
-  // Save Handler (Insert or Update)
+  // Save Handler
   const onSaveEntry = async (payload: CreateEntryPayload) => {
       if (!user || !masterKey) return;
       
@@ -110,12 +111,10 @@ export const Dashboard = () => {
       let notesPayload = null;
       if (payload.notes) {
            const notesEnc = await encryptData(payload.notes, masterKey);
-           // Store as "IV:CIPHER" to ensure unique IV for notes
            notesPayload = `${notesEnc.iv}:${notesEnc.cipherText}`;
       }
 
       if (entryToEdit) {
-          // --- UPDATE MODE ---
           const { data, error } = await supabase.from('entries').update({
               service_name: payload.service_name,
               username: payload.username,
@@ -142,12 +141,9 @@ export const Dashboard = () => {
                   password: payload.password,
                   notes: payload.notes
               };
-              
-              // Update local list
               setEntries(entries.map(e => e.id === updatedEntry.id ? updatedEntry : e));
           }
       } else {
-          // --- CREATE MODE ---
           const { data, error } = await supabase.from('entries').insert({
               user_id: user.id,
               service_name: payload.service_name,
@@ -181,6 +177,7 @@ export const Dashboard = () => {
   const handleAddNewClick = () => {
       setEntryToEdit(null);
       setModalOpen(true);
+      setMobileMenuOpen(false);
   };
 
   const handleEditClick = (entry: DecryptedEntry) => {
@@ -190,8 +187,15 @@ export const Dashboard = () => {
 
   const handleDelete = async (id: string) => {
       if(!confirm(commonT.confirm)) return;
-      await supabase.from('entries').delete().eq('id', id);
-      setEntries(entries.filter(e => e.id !== id));
+      
+      const { error } = await supabase.from('entries').delete().eq('id', id);
+      
+      if (error) {
+          addToast('error', "Failed to delete entry");
+      } else {
+          setEntries(entries.filter(e => e.id !== id));
+          addToast('success', "Entry deleted successfully");
+      }
   }
 
   const toggleReveal = (id: string) => {
@@ -204,6 +208,7 @@ export const Dashboard = () => {
   const copyToClipboard = (id: string, text: string) => {
       navigator.clipboard.writeText(text);
       setCopiedId(id);
+      addToast('success', modalT.copied);
       setTimeout(() => setCopiedId(null), 2000);
   }
 
@@ -223,7 +228,6 @@ export const Dashboard = () => {
       });
   }, [entries, searchTerm, selectedCategory]);
 
-  // Helper to render the empty state description with bold parts
   const renderEmptyDesc = () => {
       const parts = t.emptyDesc.split(/<1>(.*?)<\/1>/);
       if (parts.length === 3) {
@@ -256,23 +260,34 @@ export const Dashboard = () => {
       }
   }
 
-  return (
-    <div className="flex h-screen bg-slate-50 dark:bg-dark-950 text-slate-900 dark:text-slate-200 transition-colors duration-300">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white dark:bg-dark-900 border-r border-slate-200 dark:border-dark-800 flex flex-col hidden md:flex transition-colors duration-300">
-        <div className="p-6 border-b border-slate-200 dark:border-dark-800 flex items-center gap-3">
-            <div className="p-2 bg-primary-600 rounded-lg">
-                <IconShieldCheck size={24} className="text-white" />
+  // Sidebar Content Component
+  const SidebarContent = () => (
+      <div className="flex flex-col h-full">
+        <div className="p-6 border-b border-slate-200 dark:border-dark-800 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary-600 rounded-lg">
+                    <IconShieldCheck size={24} className="text-white" />
+                </div>
+                <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">AuraCrypt</span>
             </div>
-            <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">AuraCrypt</span>
+            {/* Mobile Close Button */}
+            <button 
+                onClick={() => setMobileMenuOpen(false)}
+                className="md:hidden p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-dark-800 rounded-lg"
+            >
+                <IconX size={24} />
+            </button>
         </div>
         
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             <div className="px-3 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t.categories}</div>
             {CATEGORIES.map(cat => (
                 <button
                     key={cat}
-                    onClick={() => setSelectedCategory(cat)}
+                    onClick={() => {
+                        setSelectedCategory(cat);
+                        setMobileMenuOpen(false);
+                    }}
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition ${
                         selectedCategory === cat 
                         ? 'bg-primary-50 text-primary-700 dark:bg-primary-500/10 dark:text-primary-400' 
@@ -287,36 +302,77 @@ export const Dashboard = () => {
              <div className="my-4 border-t border-slate-200 dark:border-dark-800"></div>
              <div className="px-3 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tools</div>
              
-             <button onClick={() => setHealthOpen(true)} className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-800 rounded-lg transition">
+             <button 
+                onClick={() => { setHealthOpen(true); setMobileMenuOpen(false); }} 
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-800 rounded-lg transition"
+             >
                 <IconActivity size={18} className="text-red-500" />
                 {t.healthCheck}
              </button>
         </nav>
 
-        <div className="p-4 border-t border-slate-200 dark:border-dark-800 space-y-3">
+        <div className="p-4 border-t border-slate-200 dark:border-dark-800 space-y-3 bg-slate-50/50 dark:bg-dark-900/50">
             <div className="flex items-center justify-between px-2 gap-2">
                 <ThemeToggle />
                 <LanguageToggle />
             </div>
-            <div className="px-3 text-xs text-slate-500 truncate">
+            <div className="px-3 text-xs text-slate-500 truncate font-mono">
                 {user?.email}
             </div>
 
-            <button onClick={() => setSettingsOpen(true)} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-800 rounded-lg transition">
+            <button 
+                onClick={() => { setSettingsOpen(true); setMobileMenuOpen(false); }} 
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-800 rounded-lg transition"
+            >
                 <IconSettings size={18} /> {t.settings}
             </button>
 
-            <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition">
+            <button 
+                onClick={handleLogout} 
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition"
+            >
                 <IconLogout size={18} /> {t.logout}
             </button>
         </div>
+      </div>
+  );
+
+  return (
+    <div className="flex h-screen bg-slate-50 dark:bg-dark-950 text-slate-900 dark:text-slate-200 transition-colors duration-300">
+      
+      {/* Desktop Sidebar */}
+      <aside className="w-64 bg-white dark:bg-dark-900 border-r border-slate-200 dark:border-dark-800 hidden md:flex flex-col transition-colors duration-300">
+        <SidebarContent />
       </aside>
+
+      {/* Mobile Sidebar Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-40 md:hidden">
+            {/* Backdrop */}
+            <div 
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                onClick={() => setMobileMenuOpen(false)}
+            ></div>
+            {/* Sidebar Panel */}
+            <div className="absolute inset-y-0 left-0 w-72 bg-white dark:bg-dark-900 shadow-2xl animate-in slide-in-from-left duration-300">
+                <SidebarContent />
+            </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
         {/* Header */}
-        <header className="h-16 bg-white/80 dark:bg-dark-900/50 backdrop-blur-md border-b border-slate-200 dark:border-dark-800 flex items-center justify-between px-6 transition-colors duration-300">
-            <div className="flex items-center gap-4 flex-1">
+        <header className="h-16 bg-white/80 dark:bg-dark-900/50 backdrop-blur-md border-b border-slate-200 dark:border-dark-800 flex items-center justify-between px-4 sm:px-6 transition-colors duration-300 z-10">
+            <div className="flex items-center gap-3 flex-1">
+                {/* Mobile Menu Button */}
+                <button 
+                    onClick={() => setMobileMenuOpen(true)}
+                    className="md:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-dark-800 rounded-lg"
+                >
+                    <IconMenu2 size={24} />
+                </button>
+
                 <div className="relative w-full max-w-md">
                     <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={18} />
                     <input 
@@ -330,16 +386,18 @@ export const Dashboard = () => {
             </div>
             <button 
                 onClick={handleAddNewClick}
-                className="ml-4 bg-primary-600 hover:bg-primary-700 dark:hover:bg-primary-500 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-lg shadow-primary-500/20"
+                className="ml-3 bg-primary-600 hover:bg-primary-700 dark:hover:bg-primary-500 text-white px-3 sm:px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-lg shadow-primary-500/20 whitespace-nowrap"
             >
                 <IconPlus size={18} /> <span className="hidden sm:inline">{t.addEntryBtn}</span>
             </button>
         </header>
 
         {/* List */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
             {isLoadingData ? (
-                <div className="flex items-center justify-center h-full text-slate-500">{t.decrypting}</div>
+                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+                    {[...Array(6)].map((_, i) => <SkeletonEntry key={i} />)}
+                 </div>
             ) : entries.length === 0 ? (
                 // ZERO-KNOWLEDGE INITIALIZATION ONBOARDING STATE
                 <div className="flex flex-col items-center justify-center h-full p-6">
@@ -373,8 +431,8 @@ export const Dashboard = () => {
                     <p>{t.noResults}</p>
                 </div>
             ) : (
-                // LIST STATE - REDESIGNED CARD GRID
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+                // LIST STATE
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5 pb-10">
                     {filteredEntries.map(entry => (
                         <div key={entry.id} className="group relative bg-white dark:bg-dark-900 border border-slate-200 dark:border-dark-800 rounded-2xl shadow-sm hover:shadow-lg hover:border-primary-500/30 transition-all duration-300 flex flex-col overflow-hidden">
                             

@@ -17,7 +17,7 @@ interface Props {
 }
 
 export const SettingsModal: React.FC<Props> = ({ isOpen, onClose }) => {
-  const { language, autoLockDuration, setAutoLockDuration, entries, setEntries, setMasterKey, user, masterKey } = useStore();
+  const { language, autoLockDuration, setAutoLockDuration, entries, setEntries, setMasterKey, user, addToast } = useStore();
   const t = translations[language].settings;
   const commonT = translations[language].common;
 
@@ -59,7 +59,6 @@ export const SettingsModal: React.FC<Props> = ({ isOpen, onClose }) => {
             const { data, error } = await supabase
                 .from('entries')
                 .select('encrypted_password, iv')
-                .eq('user_id', user.id)
                 .limit(1)
                 .single();
             
@@ -117,6 +116,7 @@ export const SettingsModal: React.FC<Props> = ({ isOpen, onClose }) => {
         }
 
         await setMasterKey(newKey);
+        addToast('success', t.success);
         setMsg({ type: 'success', text: t.success });
         setCurrentPw('');
         setNewPw('');
@@ -125,6 +125,7 @@ export const SettingsModal: React.FC<Props> = ({ isOpen, onClose }) => {
     } catch (err: any) {
         console.error(err);
         setMsg({ type: 'error', text: err.message || commonT.error });
+        addToast('error', err.message);
     } finally {
         setIsUpdating(false);
     }
@@ -142,6 +143,7 @@ export const SettingsModal: React.FC<Props> = ({ isOpen, onClose }) => {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
+      addToast('success', "Vault exported to CSV");
   };
 
   // --- IMPORT HANDLER ---
@@ -151,7 +153,10 @@ export const SettingsModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
-      if (!file || !user || !masterKey) return;
+      if (!file || !user) return;
+
+      const masterKey = useStore.getState().masterKey;
+      if (!masterKey) return;
 
       setIsImporting(true);
       setMsg(null);
@@ -162,14 +167,13 @@ export const SettingsModal: React.FC<Props> = ({ isOpen, onClose }) => {
           
           if (payloads.length === 0) {
               setMsg({ type: 'error', text: "No valid entries found in CSV." });
+              addToast('error', "No valid entries found");
               return;
           }
 
           // 2. Encrypt & Prepare Batches
           const newDecryptedEntries: DecryptedEntry[] = [];
           
-          // Process sequentially to avoid freezing UI too much, or parallelize if needed.
-          // For safety and speed balance, we'll do parallel promises.
           const dbInserts = await Promise.all(payloads.map(async (p) => {
               const pwEnc = await encryptData(p.password, masterKey);
               
@@ -202,7 +206,6 @@ export const SettingsModal: React.FC<Props> = ({ isOpen, onClose }) => {
           // 4. Update Local State
           if (data) {
               data.forEach((dbEntry, idx) => {
-                  // Map back to decrypted structure using original payload (since we know order matches)
                   const payload = payloads[idx];
                   newDecryptedEntries.push({
                       id: dbEntry.id,
@@ -218,12 +221,15 @@ export const SettingsModal: React.FC<Props> = ({ isOpen, onClose }) => {
               });
               
               setEntries([...newDecryptedEntries, ...entries]);
-              setMsg({ type: 'success', text: t.importSuccess.replace('{{count}}', String(newDecryptedEntries.length)) });
+              const successMsg = t.importSuccess.replace('{{count}}', String(newDecryptedEntries.length));
+              setMsg({ type: 'success', text: successMsg });
+              addToast('success', successMsg);
           }
 
       } catch (err: any) {
           console.error("Import failed", err);
           setMsg({ type: 'error', text: "Import failed: " + err.message });
+          addToast('error', "Import failed");
       } finally {
           setIsImporting(false);
           if (fileInputRef.current) fileInputRef.current.value = '';

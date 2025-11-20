@@ -13,11 +13,11 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSave: (data: CreateEntryPayload) => Promise<void>;
-  entryToEdit?: DecryptedEntry | null; // New prop
+  entryToEdit?: DecryptedEntry | null;
 }
 
 export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave, entryToEdit }) => {
-  const { language } = useStore();
+  const { language, addToast } = useStore();
   const t = translations[language].modal;
   const commonT = translations[language].common;
 
@@ -124,10 +124,11 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave, entryToEd
     setLoading(true);
     try {
       await onSave(formData);
+      addToast('success', "Entry saved successfully");
       onClose();
     } catch (error) {
       console.error(error);
-      alert("Failed to save entry");
+      addToast('error', "Failed to save entry");
     } finally {
       setLoading(false);
     }

@@ -6,6 +6,7 @@ import { Auth } from './components/Auth';
 import { VaultUnlock } from './components/VaultUnlock';
 import { Dashboard } from './components/Dashboard';
 import { AutoLockHandler } from './components/AutoLockHandler';
+import { ToastContainer } from './components/Toast';
 import { translations } from './i18n/locales';
 
 const App = () => {
@@ -58,11 +59,17 @@ const App = () => {
   }
 
   if (!session) {
-    return <Auth />;
+    return (
+      <>
+        <ToastContainer />
+        <Auth />
+      </>
+    );
   }
 
   return (
     <>
+      <ToastContainer />
       <AutoLockHandler />
       {!isVaultUnlocked && <VaultUnlock />}
       {isVaultUnlocked ? <Dashboard /> : (
