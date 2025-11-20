@@ -6,19 +6,21 @@ import { encryptData, decryptData } from '../services/cryptoUtils';
 import { DecryptedEntry, CreateEntryPayload, DatabaseEntry, Category, CATEGORIES } from '../types';
 import { EntryModal } from './EntryModal';
 import { SettingsModal } from './SettingsModal';
+import { HealthCheckModal } from './HealthCheckModal';
 import { translations } from '../i18n/locales';
 import { LanguageToggle } from './LanguageToggle';
 import { ThemeToggle } from './ThemeToggle';
 import { 
     IconSearch, IconPlus, IconLogout, IconCopy, 
     IconEye, IconEyeOff, IconFolder, IconShieldCheck, IconTrash,
-    IconShieldExclamation, IconDatabaseImport, IconSettings
+    IconShieldExclamation, IconDatabaseImport, IconSettings, IconActivity
 } from '@tabler/icons-react';
 
 export const Dashboard = () => {
   const { user, masterKey, entries, setEntries, lockVault, session, language } = useStore();
   const [isModalOpen, setModalOpen] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
+  const [isHealthOpen, setHealthOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category>('All');
   const [revealedPasswords, setRevealedPasswords] = useState<Set<string>>(new Set());
@@ -210,6 +212,14 @@ export const Dashboard = () => {
                     {cat === 'All' ? t.categoryAll : cat}
                 </button>
             ))}
+
+             <div className="my-4 border-t border-slate-200 dark:border-dark-800"></div>
+             <div className="px-3 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tools</div>
+             
+             <button onClick={() => setHealthOpen(true)} className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-800 rounded-lg transition">
+                <IconActivity size={18} className="text-red-500" />
+                {t.healthCheck}
+             </button>
         </nav>
 
         <div className="p-4 border-t border-slate-200 dark:border-dark-800 space-y-3">
@@ -347,6 +357,11 @@ export const Dashboard = () => {
       <SettingsModal 
         isOpen={isSettingsOpen}
         onClose={() => setSettingsOpen(false)}
+      />
+
+      <HealthCheckModal
+        isOpen={isHealthOpen}
+        onClose={() => setHealthOpen(false)}
       />
     </div>
   );

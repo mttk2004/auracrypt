@@ -36,6 +36,17 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
 }
 
 /**
+ * Hash string using SHA-1 (Required for HIBP k-Anonymity)
+ * Returns UPPERCASE Hex string
+ */
+export const digestSHA1 = async (message: string): Promise<string> => {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-1', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+};
+
+/**
  * Derives a CryptoKey from a text password using PBKDF2
  */
 export const deriveKeyFromPassword = async (password: string): Promise<CryptoKey> => {

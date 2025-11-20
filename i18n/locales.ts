@@ -54,6 +54,7 @@ export const translations = {
       emptyNotice: "Security Notice: Please create your first entry immediately to cryptographically lock your vault and secure your account.",
       createFirstBtn: "Create First Entry",
       settings: "Settings",
+      healthCheck: "Health Check",
     },
     modal: {
       title: "Add New Entry",
@@ -91,6 +92,21 @@ export const translations = {
       pwMismatch: "New passwords do not match.",
       pwTooShort: "New password must be at least 6 characters.",
       incorrectCurrent: "Current password is incorrect.",
+    },
+    health: {
+        title: "Password Health",
+        scanBtn: "Run Security Scan",
+        scanning: "Analyzing Hashes...",
+        score: "Security Score",
+        desc: "Analysis is performed locally and via k-Anonymity API. Your passwords never leave this device.",
+        breached: "Compromised",
+        reused: "Reused",
+        weak: "Weak",
+        safe: "Secure",
+        breachedDesc: "Found in known data leaks. Change immediately!",
+        reusedDesc: "Used in multiple accounts.",
+        weakDesc: "Easy to guess or crack.",
+        noIssues: "No issues found. Great job!",
     }
   },
   vn: {
@@ -147,6 +163,7 @@ export const translations = {
       emptyNotice: "Lưu ý bảo mật: Vui lòng tạo mục đầu tiên ngay lập tức để khóa mã hóa két sắt và bảo vệ tài khoản.",
       createFirstBtn: "Tạo Mục Đầu Tiên",
       settings: "Cài đặt",
+      healthCheck: "Sức Khỏe Mật Khẩu",
     },
     modal: {
       title: "Thêm Mục Mới",
@@ -184,6 +201,21 @@ export const translations = {
       pwMismatch: "Mật khẩu mới không khớp.",
       pwTooShort: "Mật khẩu mới phải từ 6 ký tự trở lên.",
       incorrectCurrent: "Mật khẩu hiện tại không đúng.",
+    },
+    health: {
+        title: "Sức Khỏe Mật Khẩu",
+        scanBtn: "Chạy Quét Bảo Mật",
+        scanning: "Đang phân tích Hash...",
+        score: "Điểm Bảo Mật",
+        desc: "Phân tích được thực hiện cục bộ và qua API k-Anonymity. Mật khẩu của bạn không bao giờ rời khỏi thiết bị.",
+        breached: "Bị Lộ",
+        reused: "Dùng Lại",
+        weak: "Yếu",
+        safe: "An Toàn",
+        breachedDesc: "Tìm thấy trong dữ liệu rò rỉ. Đổi ngay!",
+        reusedDesc: "Được sử dụng ở nhiều tài khoản.",
+        weakDesc: "Dễ bị đoán hoặc bẻ khóa.",
+        noIssues: "Không phát hiện vấn đề. Tuyệt vời!",
     }
   }
 };
