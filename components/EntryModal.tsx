@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { CreateEntryPayload, CATEGORIES } from '../types';
+import { CreateEntryPayload, CATEGORIES, DecryptedEntry } from '../types';
 import { 
     IconX, IconDeviceFloppy, IconWand, IconRefresh, 
     IconCheck, IconUser, IconLock, IconWorld, 
@@ -13,9 +13,10 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSave: (data: CreateEntryPayload) => Promise<void>;
+  entryToEdit?: DecryptedEntry | null; // New prop
 }
 
-export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
+export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave, entryToEdit }) => {
   const { language } = useStore();
   const t = translations[language].modal;
   const commonT = translations[language].common;
@@ -40,21 +41,34 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
   const [includeSym, setIncludeSym] = useState(true);
   const [generatedPass, setGeneratedPass] = useState('');
 
-  // Reset state when opening
+  // Reset or Populate state when opening
   useEffect(() => {
     if (isOpen) {
-        setFormData({
-            service_name: '',
-            username: '',
-            url: '',
-            password: '',
-            category: 'Other',
-            notes: ''
-        });
+        if (entryToEdit) {
+            // Edit Mode: Pre-fill data
+            setFormData({
+                service_name: entryToEdit.service_name,
+                username: entryToEdit.username || '',
+                url: entryToEdit.url || '',
+                password: entryToEdit.password,
+                category: entryToEdit.category,
+                notes: entryToEdit.notes || ''
+            });
+        } else {
+            // Create Mode: Reset
+            setFormData({
+                service_name: '',
+                username: '',
+                url: '',
+                password: '',
+                category: 'Other',
+                notes: ''
+            });
+        }
         setShowGenerator(false);
         setShowPassword(false);
     }
-  }, [isOpen]);
+  }, [isOpen, entryToEdit]);
 
   // Password Generator Logic
   useEffect(() => {
@@ -128,8 +142,12 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-dark-800 bg-slate-50/50 dark:bg-dark-900/50 backdrop-blur-sm">
           <div>
-             <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">{t.title}</h3>
-             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Add credentials to your secure vault</p>
+             <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+                {entryToEdit ? commonT.edit : t.title}
+             </h3>
+             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                {entryToEdit ? "Update your encrypted credentials" : "Add credentials to your secure vault"}
+             </p>
           </div>
           <button 
             onClick={onClose} 
