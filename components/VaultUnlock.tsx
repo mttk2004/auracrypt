@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { deriveKeyFromPassword, decryptData } from '../services/cryptoUtils';
 import { useStore } from '../store/useStore';
@@ -27,24 +28,26 @@ export const VaultUnlock = () => {
       if (!session?.user) return;
       
       try {
+        // Fetch the latest entry to verify password against
         const { data, error } = await supabase
           .from('entries')
           .select('*')
           .eq('user_id', session.user.id)
-          .order('created_at', { ascending: false }) // QUAN TRỌNG: Luôn kiểm tra entry mới nhất
+          .order('created_at', { ascending: false })
           .limit(1);
 
         if (error) throw error;
 
         if (!data || data.length === 0) {
           setMode('setup');
+          setTestEntry(null);
         } else {
           setTestEntry(data[0] as DatabaseEntry);
           setMode('unlock');
         }
       } catch (err) {
         console.error("Failed to check vault status:", err);
-        setErrorMsg("Network error. Please check console.");
+        setErrorMsg("Network error. Could not connect to vault.");
       }
     };
 
@@ -57,7 +60,6 @@ export const VaultUnlock = () => {
     setErrorMsg(null);
     setLoading(true);
 
-    // Clean input to avoid space issues
     const cleanPassword = password.trim(); 
 
     try {
@@ -67,20 +69,22 @@ export const VaultUnlock = () => {
       // Verify against the test entry fetched earlier
       if (testEntry) {
         try {
+          // Attempt to decrypt the known entry. If this fails, the password is wrong.
           await decryptData(testEntry.encrypted_password, testEntry.iv, key);
-          // If no error thrown, key is correct
+          
+          // Success: Key is valid
           await setMasterKey(key);
         } catch (decryptionError) {
           console.error("Decryption verification failed for entry ID:", testEntry.id);
-          throw new Error("Incorrect password.");
+          throw new Error("Incorrect password. Please try again.");
         }
       } else {
-         // Fallback should not happen in unlock mode
+         // Should not happen in 'unlock' mode, but if so, just set the key
          await setMasterKey(key);
       }
     } catch (err: any) {
       setErrorMsg(err.message || "Failed to unlock.");
-      setPassword('');
+      setPassword(''); // Clear password on failure
     } finally {
       setLoading(false);
     }
@@ -109,22 +113,35 @@ export const VaultUnlock = () => {
       const key = await deriveKeyFromPassword(cleanPassword);
       await setMasterKey(key); 
     } catch (err) {
-      setErrorMsg("Failed to generate key.");
+      console.error(err);
+      setErrorMsg("Failed to generate key encryption.");
     } finally {
       setLoading(false);
     }
   };
 
   // 4. Logic for Emergency Reset
-  const handleEmergencyReset = async () => {
-    if (!window.confirm("DANGER: This will PERMANENTLY DELETE all your passwords to reset the vault. This action cannot be undone. Are you sure?")) {
-      return;
+  const handleEmergencyReset = async (e: React.MouseEvent) => {
+    // CRITICAL: Stop propagation and default behavior to prevent form submission
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!session?.user) {
+        alert("Session invalid. Please refresh.");
+        return;
     }
 
-    if (!session?.user) return;
+    const confirmed = window.confirm(
+        "⚠️ DANGER: RESET VAULT ⚠️\n\nThis will PERMANENTLY DELETE all your saved passwords.\nYou will lose all data.\n\nClick OK to delete everything and start over."
+    );
+
+    if (!confirmed) return;
+
     setLoading(true);
+    setErrorMsg(null);
 
     try {
+      // Delete all entries for this user
       const { error } = await supabase
         .from('entries')
         .delete()
@@ -132,15 +149,16 @@ export const VaultUnlock = () => {
 
       if (error) throw error;
 
-      alert("Vault reset successful. Please set a new Master Password.");
+      // Reset local state to Setup Mode
       setMode('setup');
-      setTestEntry(null); // Clear test entry
+      setTestEntry(null);
       setPassword('');
       setConfirmPassword('');
-      setErrorMsg(null);
+      alert("Vault reset complete. Please set a new Master Password.");
+      
     } catch (err: any) {
-      console.error(err);
-      alert("Reset failed (Check RLS Policy?): " + err.message);
+      console.error("Reset Error:", err);
+      setErrorMsg("Reset failed: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -151,7 +169,7 @@ export const VaultUnlock = () => {
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
         <div className="flex flex-col items-center gap-4 text-primary-500">
           <IconLoader2 className="animate-spin" size={48} />
-          <p className="text-sm font-mono">Connecting to Vault...</p>
+          <p className="text-sm font-mono">Syncing with Vault...</p>
         </div>
       </div>
     );
@@ -232,8 +250,9 @@ export const VaultUnlock = () => {
 
         <div className="mt-8 pt-6 border-t border-dark-800 text-center">
           <button
+            type="button"
             onClick={handleEmergencyReset}
-            className="text-xs text-slate-600 hover:text-red-500 transition flex items-center justify-center gap-1 mx-auto group"
+            className="text-xs text-slate-600 hover:text-red-500 transition flex items-center justify-center gap-1 mx-auto group cursor-pointer px-4 py-2 rounded hover:bg-dark-800"
           >
             <IconTrash size={14} className="group-hover:scale-110 transition-transform" />
             <span>Reset Vault / Forgot Password?</span>

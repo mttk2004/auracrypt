@@ -6,7 +6,8 @@ import { DecryptedEntry, CreateEntryPayload, DatabaseEntry, Category, CATEGORIES
 import { EntryModal } from './EntryModal';
 import { 
     IconSearch, IconPlus, IconLogout, IconCopy, 
-    IconEye, IconEyeOff, IconFolder, IconShieldCheck, IconTrash
+    IconEye, IconEyeOff, IconFolder, IconShieldCheck, IconTrash,
+    IconShieldExclamation, IconDatabaseImport
 } from '@tabler/icons-react';
 
 export const Dashboard = () => {
@@ -228,12 +229,41 @@ export const Dashboard = () => {
         <div className="flex-1 overflow-y-auto p-6">
             {isLoadingData ? (
                 <div className="flex items-center justify-center h-full text-slate-500">Decrypting Vault...</div>
+            ) : entries.length === 0 ? (
+                // ZERO-KNOWLEDGE INITIALIZATION ONBOARDING STATE
+                <div className="flex flex-col items-center justify-center h-full p-6">
+                    <div className="max-w-2xl w-full bg-dark-900/50 border-2 border-dashed border-amber-500/30 rounded-3xl p-10 text-center animate-in fade-in zoom-in duration-500">
+                        <div className="inline-flex p-5 rounded-full bg-amber-500/10 mb-6">
+                            <IconShieldExclamation size={64} className="text-amber-500" />
+                        </div>
+                        
+                        <h2 className="text-3xl font-bold text-white mb-4 tracking-tight">Initialization Required</h2>
+                        
+                        <p className="text-slate-400 mb-6 text-lg leading-relaxed max-w-lg mx-auto">
+                            Your vault is currently empty. Because this is a <strong className="text-amber-100">Zero-Knowledge</strong> architecture, 
+                            your Master Password is not yet verified against any data.
+                        </p>
+                        
+                        <div className="bg-dark-950/50 p-5 rounded-xl border border-dark-800 mb-8 text-sm text-slate-500 max-w-lg mx-auto">
+                            <strong>Security Notice:</strong> Please create your first entry immediately to cryptographically lock your vault and secure your account.
+                        </div>
+                        
+                        <button
+                            onClick={() => setModalOpen(true)}
+                            className="bg-amber-600 hover:bg-amber-500 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 mx-auto transition-all hover:scale-105 hover:shadow-lg hover:shadow-amber-500/20"
+                        >
+                            <IconPlus size={24} /> Create First Entry
+                        </button>
+                    </div>
+                </div>
             ) : filteredEntries.length === 0 ? (
+                // NO SEARCH RESULTS STATE
                 <div className="flex flex-col items-center justify-center h-full text-slate-500">
                     <IconFolder size={48} className="mb-4 opacity-20" />
-                    <p>No entries found.</p>
+                    <p>No entries found matching your criteria.</p>
                 </div>
             ) : (
+                // LIST STATE
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                     {filteredEntries.map(entry => (
                         <div key={entry.id} className="group bg-dark-900 border border-dark-800 rounded-xl p-5 hover:border-primary-500/50 transition-all shadow-sm hover:shadow-md relative">
