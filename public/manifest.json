@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "AuraCrypt Password Manager",
+  "version": "1.0.0",
+  "description": "Secure, client-side encrypted password manager with auto-fill.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Open AuraCrypt"
+  },
+  "icons": {
+    "16": "favicon.ico",
+    "48": "favicon.ico",
+    "128": "favicon.ico"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}
