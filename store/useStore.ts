@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { Session, User } from '@supabase/supabase-js';
 import { DecryptedEntry, DatabaseEntry } from '../types';
@@ -25,6 +26,10 @@ interface AppState {
   setMasterKey: (key: CryptoKey) => Promise<void>;
   isVaultUnlocked: boolean;
   
+  // Settings State
+  autoLockDuration: number; // in minutes, 0 = off
+  setAutoLockDuration: (minutes: number) => void;
+
   // Data State
   entries: DecryptedEntry[];
   setEntries: (entries: DecryptedEntry[]) => void;
@@ -66,6 +71,13 @@ export const useStore = create<AppState>((set, get) => ({
   masterKey: null,
   isVaultUnlocked: false,
   
+  // Auto Lock Settings
+  autoLockDuration: Number(localStorage.getItem('auracrypt_autolock')) || 0,
+  setAutoLockDuration: (minutes) => {
+      localStorage.setItem('auracrypt_autolock', String(minutes));
+      set({ autoLockDuration: minutes });
+  },
+
   entries: [],
   setEntries: (entries) => set({ entries }),
   

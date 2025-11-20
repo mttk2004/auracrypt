@@ -1,21 +1,24 @@
+
 import React, { useEffect, useState, useMemo } from 'react';
 import { useStore } from '../store/useStore';
 import { supabase } from '../supabaseClient';
 import { encryptData, decryptData } from '../services/cryptoUtils';
 import { DecryptedEntry, CreateEntryPayload, DatabaseEntry, Category, CATEGORIES } from '../types';
 import { EntryModal } from './EntryModal';
+import { SettingsModal } from './SettingsModal';
 import { translations } from '../i18n/locales';
 import { LanguageToggle } from './LanguageToggle';
 import { ThemeToggle } from './ThemeToggle';
 import { 
     IconSearch, IconPlus, IconLogout, IconCopy, 
     IconEye, IconEyeOff, IconFolder, IconShieldCheck, IconTrash,
-    IconShieldExclamation, IconDatabaseImport
+    IconShieldExclamation, IconDatabaseImport, IconSettings
 } from '@tabler/icons-react';
 
 export const Dashboard = () => {
   const { user, masterKey, entries, setEntries, lockVault, session, language } = useStore();
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isSettingsOpen, setSettingsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category>('All');
   const [revealedPasswords, setRevealedPasswords] = useState<Set<string>>(new Set());
@@ -217,6 +220,11 @@ export const Dashboard = () => {
             <div className="px-3 text-xs text-slate-500 truncate">
                 {user?.email}
             </div>
+
+            <button onClick={() => setSettingsOpen(true)} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-800 rounded-lg transition">
+                <IconSettings size={18} /> {t.settings}
+            </button>
+
             <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition">
                 <IconLogout size={18} /> {t.logout}
             </button>
@@ -334,6 +342,11 @@ export const Dashboard = () => {
         isOpen={isModalOpen} 
         onClose={() => setModalOpen(false)} 
         onSave={onSaveEntry}
+      />
+
+      <SettingsModal 
+        isOpen={isSettingsOpen}
+        onClose={() => setSettingsOpen(false)}
       />
     </div>
   );

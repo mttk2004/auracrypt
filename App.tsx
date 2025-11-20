@@ -1,9 +1,11 @@
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
 import { useStore } from './store/useStore';
 import { Auth } from './components/Auth';
 import { VaultUnlock } from './components/VaultUnlock';
 import { Dashboard } from './components/Dashboard';
+import { AutoLockHandler } from './components/AutoLockHandler';
 import { translations } from './i18n/locales';
 
 const App = () => {
@@ -61,6 +63,7 @@ const App = () => {
 
   return (
     <>
+      <AutoLockHandler />
       {!isVaultUnlocked && <VaultUnlock />}
       {isVaultUnlocked ? <Dashboard /> : (
           <div className="h-screen w-full bg-slate-50 dark:bg-dark-950 flex items-center justify-center text-slate-400 dark:text-slate-500 blur-sm scale-95 transition-all">
