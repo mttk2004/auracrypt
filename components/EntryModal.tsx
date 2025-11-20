@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { CreateEntryPayload, CATEGORIES, DecryptedEntry } from '../types';
+import { CreateEntryPayload, DecryptedEntry } from '../types';
 import { 
     IconX, IconDeviceFloppy, IconWand, IconRefresh, 
     IconCheck, IconUser, IconLock, IconWorld, 
@@ -17,7 +17,7 @@ interface Props {
 }
 
 export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave, entryToEdit }) => {
-  const { language, addToast } = useStore();
+  const { language, addToast, categories } = useStore();
   const t = translations[language].modal;
   const commonT = translations[language].common;
 
@@ -195,8 +195,8 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave, entryToEd
                             value={formData.category}
                             onChange={e => setFormData({...formData, category: e.target.value})}
                         >
-                            {CATEGORIES.filter(c => c !== 'All').map(c => (
-                                <option key={c} value={c}>{c}</option>
+                            {categories.map(cat => (
+                                <option key={cat.id} value={cat.name}>{cat.name}</option>
                             ))}
                         </select>
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">

@@ -3,10 +3,11 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useStore } from '../store/useStore';
 import { supabase } from '../supabaseClient';
 import { encryptData, decryptData } from '../services/cryptoUtils';
-import { DecryptedEntry, CreateEntryPayload, DatabaseEntry, Category, CATEGORIES } from '../types';
+import { DecryptedEntry, CreateEntryPayload, DatabaseEntry } from '../types';
 import { EntryModal } from './EntryModal';
 import { SettingsModal } from './SettingsModal';
 import { HealthCheckModal } from './HealthCheckModal';
+import { CategoryModal } from './CategoryModal';
 import { SkeletonEntry } from './SkeletonEntry';
 import { translations } from '../i18n/locales';
 import { LanguageToggle } from './LanguageToggle';
@@ -15,22 +16,23 @@ import {
     IconSearch, IconPlus, IconLogout, IconCopy, 
     IconEye, IconEyeOff, IconFolder, IconShieldCheck, IconTrash,
     IconShieldExclamation, IconSettings, IconActivity, IconExternalLink, 
-    IconWorld, IconPencil, IconNote, IconMenu2, IconX
+    IconWorld, IconPencil, IconNote, IconMenu2, IconX, IconCategory
 } from '@tabler/icons-react';
 
 export const Dashboard = () => {
-  const { user, masterKey, entries, setEntries, lockVault, session, language, addToast } = useStore();
+  const { user, masterKey, entries, setEntries, lockVault, session, language, addToast, categories, fetchCategories } = useStore();
   
   // Modals
   const [isModalOpen, setModalOpen] = useState(false);
   const [entryToEdit, setEntryToEdit] = useState<DecryptedEntry | null>(null);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   const [isHealthOpen, setHealthOpen] = useState(false);
+  const [isCatModalOpen, setCatModalOpen] = useState(false);
   
   // UI State
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<Category>('All');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [revealedPasswords, setRevealedPasswords] = useState<Set<string>>(new Set());
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -38,6 +40,11 @@ export const Dashboard = () => {
   const t = translations[language].dashboard;
   const commonT = translations[language].common;
   const modalT = translations[language].modal;
+
+  // Fetch Categories on mount
+  useEffect(() => {
+      if (user) fetchCategories();
+  }, [user, fetchCategories]);
 
   // Fetch and Decrypt Data
   useEffect(() => {
@@ -270,7 +277,6 @@ export const Dashboard = () => {
                 </div>
                 <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">AuraCrypt</span>
             </div>
-            {/* Mobile Close Button */}
             <button 
                 onClick={() => setMobileMenuOpen(false)}
                 className="md:hidden p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-dark-800 rounded-lg"
@@ -279,23 +285,48 @@ export const Dashboard = () => {
             </button>
         </div>
         
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-            <div className="px-3 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t.categories}</div>
-            {CATEGORIES.map(cat => (
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
+            <div className="px-3 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex justify-between items-center">
+                {t.categories}
+                <button 
+                    onClick={() => { setCatModalOpen(true); setMobileMenuOpen(false); }} 
+                    className="text-primary-600 hover:text-primary-700 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 p-1 rounded transition"
+                    title={t.manageCats}
+                >
+                    <IconCategory size={14} />
+                </button>
+            </div>
+            
+            <button
+                onClick={() => {
+                    setSelectedCategory('All');
+                    setMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition ${
+                    selectedCategory === 'All' 
+                    ? 'bg-primary-50 text-primary-700 dark:bg-primary-500/10 dark:text-primary-400' 
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-800 hover:text-slate-900 dark:hover:text-slate-200'
+                }`}
+            >
+                <IconFolder size={18} />
+                {t.categoryAll}
+            </button>
+
+            {categories.map(cat => (
                 <button
-                    key={cat}
+                    key={cat.id}
                     onClick={() => {
-                        setSelectedCategory(cat);
+                        setSelectedCategory(cat.name);
                         setMobileMenuOpen(false);
                     }}
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition ${
-                        selectedCategory === cat 
+                        selectedCategory === cat.name
                         ? 'bg-primary-50 text-primary-700 dark:bg-primary-500/10 dark:text-primary-400' 
                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-800 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                 >
                     <IconFolder size={18} />
-                    {cat === 'All' ? t.categoryAll : cat}
+                    {cat.name}
                 </button>
             ))}
 
@@ -546,6 +577,11 @@ export const Dashboard = () => {
       <HealthCheckModal
         isOpen={isHealthOpen}
         onClose={() => setHealthOpen(false)}
+      />
+      
+      <CategoryModal
+        isOpen={isCatModalOpen}
+        onClose={() => setCatModalOpen(false)}
       />
     </div>
   );

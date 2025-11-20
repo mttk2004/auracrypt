@@ -49,6 +49,7 @@ export const translations = {
       logout: "Logout",
       categories: "Categories",
       categoryAll: "All",
+      manageCats: "Manage Categories",
       emptyTitle: "Initialization Required",
       emptyDesc: "Your vault is currently empty. Because this is a <1>Zero-Knowledge</1> architecture, your Master Password is not yet verified against any data.",
       emptyNotice: "Security Notice: Please create your first entry immediately to cryptographically lock your vault and secure your account.",
@@ -123,6 +124,15 @@ export const translations = {
         suggShort: "Too short (min 10 chars)",
         suggSimple: "Add numbers or symbols",
         suggCommon: "Too common pattern",
+    },
+    catManager: {
+        title: "Manage Categories",
+        addPlaceholder: "New category name...",
+        addBtn: "Add",
+        empty: "No categories found.",
+        exists: "Category already exists.",
+        added: "Category added.",
+        deleted: "Category deleted."
     }
   },
   vn: {
@@ -174,6 +184,7 @@ export const translations = {
       logout: "Đăng xuất",
       categories: "Danh Mục",
       categoryAll: "Tất cả",
+      manageCats: "Quản Lý Danh Mục",
       emptyTitle: "Yêu Cầu Khởi Tạo",
       emptyDesc: "Két của bạn đang trống. Vì đây là kiến trúc <1>Zero-Knowledge</1>, Mật khẩu chủ của bạn chưa được xác thực với bất kỳ dữ liệu nào.",
       emptyNotice: "Lưu ý bảo mật: Vui lòng tạo mục đầu tiên ngay lập tức để khóa mã hóa két sắt và bảo vệ tài khoản.",
@@ -248,6 +259,15 @@ export const translations = {
         suggShort: "Quá ngắn (tối thiểu 10 ký tự)",
         suggSimple: "Thêm số hoặc ký tự đặc biệt",
         suggCommon: "Mẫu quá phổ biến",
+    },
+    catManager: {
+        title: "Quản Lý Danh Mục",
+        addPlaceholder: "Tên danh mục mới...",
+        addBtn: "Thêm",
+        empty: "Chưa có danh mục nào.",
+        exists: "Danh mục đã tồn tại.",
+        added: "Đã thêm danh mục.",
+        deleted: "Đã xóa danh mục."
     }
   }
 };

@@ -1,7 +1,8 @@
 
 import { create } from 'zustand';
 import { Session, User } from '@supabase/supabase-js';
-import { DecryptedEntry, DatabaseEntry } from '../types';
+import { supabase } from '../supabaseClient';
+import { DecryptedEntry, DatabaseEntry, CategoryItem, DEFAULT_CATEGORIES } from '../types';
 import { exportKeyToString, importKeyFromString } from '../services/cryptoUtils';
 import { Language } from '../i18n/locales';
 
@@ -41,6 +42,12 @@ interface AppState {
   setEntries: (entries: DecryptedEntry[]) => void;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
+
+  // Category State
+  categories: CategoryItem[];
+  fetchCategories: () => Promise<void>;
+  addCategory: (name: string) => Promise<void>;
+  deleteCategory: (id: string) => Promise<void>;
 
   // Toast State
   toasts: ToastMessage[];
@@ -94,6 +101,63 @@ export const useStore = create<AppState>((set, get) => ({
   
   isLoading: false,
   setIsLoading: (isLoading) => set({ isLoading }),
+
+  // CATEGORY LOGIC
+  categories: [],
+  fetchCategories: async () => {
+    const user = get().user;
+    if (!user) return;
+
+    const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('name');
+
+    if (error) {
+        console.error("Failed to fetch categories", error);
+        return;
+    }
+
+    // Auto-initialize defaults if empty
+    if (!data || data.length === 0) {
+        const defaults = DEFAULT_CATEGORIES.map(name => ({
+            user_id: user.id,
+            name
+        }));
+        const { data: newCats, error: insertError } = await supabase
+            .from('categories')
+            .insert(defaults)
+            .select();
+        
+        if (!insertError && newCats) {
+            set({ categories: newCats });
+        }
+    } else {
+        set({ categories: data });
+    }
+  },
+
+  addCategory: async (name: string) => {
+      const user = get().user;
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('categories')
+        .insert({ user_id: user.id, name })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      if (data) {
+          set(state => ({ categories: [...state.categories, data].sort((a, b) => a.name.localeCompare(b.name)) }));
+      }
+  },
+
+  deleteCategory: async (id: string) => {
+      const { error } = await supabase.from('categories').delete().eq('id', id);
+      if (error) throw error;
+      set(state => ({ categories: state.categories.filter(c => c.id !== id) }));
+  },
 
   // Toast Logic
   toasts: [],

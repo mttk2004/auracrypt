@@ -5,7 +5,7 @@ export interface DatabaseEntry {
   service_name: string;
   username: string | null;
   category: string;
-  url: string | null; // New field
+  url: string | null; 
   encrypted_password: string; // Base64
   encrypted_notes: string | null; // Base64
   iv: string; // Base64
@@ -20,12 +20,20 @@ export interface DecryptedEntry extends Omit<DatabaseEntry, 'encrypted_password'
 export interface CreateEntryPayload {
   service_name: string;
   username: string;
-  url: string; // New field
+  url: string;
   category: string;
   password: string;
   notes: string;
 }
 
-export type Category = 'All' | 'Social' | 'Work' | 'Finance' | 'Shopping' | 'Other';
+export interface CategoryItem {
+  id: string;
+  user_id: string;
+  name: string;
+  created_at?: string;
+}
 
-export const CATEGORIES: Category[] = ['All', 'Social', 'Work', 'Finance', 'Shopping', 'Other'];
+// Category is now just a string alias as it is dynamic
+export type Category = string; 
+
+export const DEFAULT_CATEGORIES = ['Social', 'Work', 'Finance', 'Shopping', 'Other'];
