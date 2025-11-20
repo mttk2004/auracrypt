@@ -154,8 +154,23 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   deleteCategory: async (id: string) => {
-      const { error } = await supabase.from('categories').delete().eq('id', id);
+      const user = get().user;
+      if (!user) throw new Error("Authentication required");
+
+      // Explicitly ask for count to verify deletion
+      const { error, count } = await supabase
+          .from('categories')
+          .delete({ count: 'exact' })
+          .eq('id', id)
+          .eq('user_id', user.id); // Ensure RLS match
+
       if (error) throw error;
+
+      // If count is 0, it means nothing was deleted (likely RLS or ID mismatch)
+      if (count === 0 || count === null) {
+          throw new Error("Category could not be deleted. Please check permissions.");
+      }
+
       set(state => ({ categories: state.categories.filter(c => c.id !== id) }));
   },
 
