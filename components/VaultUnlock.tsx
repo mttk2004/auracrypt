@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { deriveKeyFromPassword, decryptData } from '../services/cryptoUtils';
 import { useStore } from '../store/useStore';
 import { supabase } from '../supabaseClient';
 import { DatabaseEntry } from '../types';
+import { translations } from '../i18n/locales';
 import { 
   IconKey, IconLockOpen, IconShieldLock, IconAlertTriangle, 
   IconTrash, IconCheck, IconLoader2 
@@ -21,6 +21,8 @@ export const VaultUnlock = () => {
 
   const setMasterKey = useStore((state) => state.setMasterKey);
   const session = useStore((state) => state.session);
+  const { language } = useStore();
+  const t = translations[language].vault;
 
   // 1. Check Vault Status on Mount
   useEffect(() => {
@@ -47,12 +49,12 @@ export const VaultUnlock = () => {
         }
       } catch (err) {
         console.error("Failed to check vault status:", err);
-        setErrorMsg("Network error. Could not connect to vault.");
+        setErrorMsg(t.networkError);
       }
     };
 
     checkVaultStatus();
-  }, [session]);
+  }, [session, t.networkError]);
 
   // 2. Logic for Unlock (Existing User)
   const handleUnlock = async (e: React.FormEvent) => {
@@ -76,7 +78,7 @@ export const VaultUnlock = () => {
           await setMasterKey(key);
         } catch (decryptionError) {
           console.error("Decryption verification failed for entry ID:", testEntry.id);
-          throw new Error("Incorrect password. Please try again.");
+          throw new Error(t.incorrectPw);
         }
       } else {
          // Should not happen in 'unlock' mode, but if so, just set the key
@@ -99,12 +101,12 @@ export const VaultUnlock = () => {
     const cleanConfirm = confirmPassword.trim();
 
     if (cleanPassword !== cleanConfirm) {
-      setErrorMsg("Passwords do not match.");
+      setErrorMsg(t.passwordMismatch);
       return;
     }
     
     if (cleanPassword.length < 6) {
-        setErrorMsg("Password is too short (min 6 chars).");
+        setErrorMsg(t.passwordTooShort);
         return;
     }
 
@@ -122,7 +124,6 @@ export const VaultUnlock = () => {
 
   // 4. Logic for Emergency Reset
   const handleEmergencyReset = async (e: React.MouseEvent) => {
-    // CRITICAL: Stop propagation and default behavior to prevent form submission
     e.preventDefault();
     e.stopPropagation();
 
@@ -131,9 +132,7 @@ export const VaultUnlock = () => {
         return;
     }
 
-    const confirmed = window.confirm(
-        "⚠️ DANGER: RESET VAULT ⚠️\n\nThis will PERMANENTLY DELETE all your saved passwords.\nYou will lose all data.\n\nClick OK to delete everything and start over."
-    );
+    const confirmed = window.confirm(t.resetConfirm);
 
     if (!confirmed) return;
 
@@ -141,7 +140,6 @@ export const VaultUnlock = () => {
     setErrorMsg(null);
 
     try {
-      // Delete all entries for this user
       const { error } = await supabase
         .from('entries')
         .delete()
@@ -149,12 +147,11 @@ export const VaultUnlock = () => {
 
       if (error) throw error;
 
-      // Reset local state to Setup Mode
       setMode('setup');
       setTestEntry(null);
       setPassword('');
       setConfirmPassword('');
-      alert("Vault reset complete. Please set a new Master Password.");
+      alert(t.resetSuccess);
       
     } catch (err: any) {
       console.error("Reset Error:", err);
@@ -169,7 +166,7 @@ export const VaultUnlock = () => {
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
         <div className="flex flex-col items-center gap-4 text-primary-500">
           <IconLoader2 className="animate-spin" size={48} />
-          <p className="text-sm font-mono">Syncing with Vault...</p>
+          <p className="text-sm font-mono">{t.checking}</p>
         </div>
       </div>
     );
@@ -186,12 +183,10 @@ export const VaultUnlock = () => {
             {mode === 'setup' ? <IconShieldLock size={32} /> : <IconLockOpen size={32} />}
           </div>
           <h2 className="text-2xl font-bold text-white">
-            {mode === 'setup' ? 'Setup Your Vault' : 'Unlock Vault'}
+            {mode === 'setup' ? t.setupTitle : t.unlockTitle}
           </h2>
           <p className="text-slate-400 text-sm mt-2 px-4">
-            {mode === 'setup' 
-              ? "Create a Master Password to encrypt your data." 
-              : "Enter your Master Password to decrypt your data."}
+            {mode === 'setup' ? t.setupDesc : t.unlockDesc}
           </p>
         </div>
 
@@ -203,7 +198,7 @@ export const VaultUnlock = () => {
               autoFocus
               required
               className="w-full bg-dark-800 border border-dark-700 focus:border-primary-500 rounded-lg px-4 py-3 text-white text-center text-lg tracking-widest focus:ring-1 focus:ring-primary-500 outline-none transition placeholder:text-slate-600 placeholder:tracking-normal placeholder:text-base"
-              placeholder="Master Password"
+              placeholder={t.masterPwPlaceholder}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -215,7 +210,7 @@ export const VaultUnlock = () => {
                 type="password"
                 required
                 className="w-full bg-dark-800 border border-dark-700 focus:border-primary-500 rounded-lg px-4 py-3 text-white text-center text-lg tracking-widest focus:ring-1 focus:ring-primary-500 outline-none transition placeholder:text-slate-600 placeholder:tracking-normal placeholder:text-base"
-                placeholder="Confirm Password"
+                placeholder={t.confirmPwPlaceholder}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
@@ -241,9 +236,9 @@ export const VaultUnlock = () => {
             {loading ? (
               <IconLoader2 className="animate-spin" size={20} />
             ) : mode === 'setup' ? (
-              <><IconCheck size={20} /> Create Vault</>
+              <><IconCheck size={20} /> {t.createVaultBtn}</>
             ) : (
-              <><IconLockOpen size={20} /> Unlock</>
+              <><IconLockOpen size={20} /> {t.unlockBtn}</>
             )}
           </button>
         </form>
@@ -255,7 +250,7 @@ export const VaultUnlock = () => {
             className="text-xs text-slate-600 hover:text-red-500 transition flex items-center justify-center gap-1 mx-auto group cursor-pointer px-4 py-2 rounded hover:bg-dark-800"
           >
             <IconTrash size={14} className="group-hover:scale-110 transition-transform" />
-            <span>Reset Vault / Forgot Password?</span>
+            <span>{t.resetBtn}</span>
           </button>
         </div>
 

@@ -4,6 +4,8 @@ import { supabase } from '../supabaseClient';
 import { encryptData, decryptData } from '../services/cryptoUtils';
 import { DecryptedEntry, CreateEntryPayload, DatabaseEntry, Category, CATEGORIES } from '../types';
 import { EntryModal } from './EntryModal';
+import { translations } from '../i18n/locales';
+import { LanguageToggle } from './LanguageToggle';
 import { 
     IconSearch, IconPlus, IconLogout, IconCopy, 
     IconEye, IconEyeOff, IconFolder, IconShieldCheck, IconTrash,
@@ -11,12 +13,15 @@ import {
 } from '@tabler/icons-react';
 
 export const Dashboard = () => {
-  const { user, masterKey, entries, setEntries, lockVault, session } = useStore();
+  const { user, masterKey, entries, setEntries, lockVault, session, language } = useStore();
   const [isModalOpen, setModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category>('All');
   const [revealedPasswords, setRevealedPasswords] = useState<Set<string>>(new Set());
   const [isLoadingData, setIsLoadingData] = useState(false);
+  
+  const t = translations[language].dashboard;
+  const commonT = translations[language].common;
 
   // Fetch and Decrypt Data
   useEffect(() => {
@@ -129,7 +134,7 @@ export const Dashboard = () => {
   };
 
   const handleDelete = async (id: string) => {
-      if(!confirm("Are you sure?")) return;
+      if(!confirm(commonT.confirm)) return;
       await supabase.from('entries').delete().eq('id', id);
       setEntries(entries.filter(e => e.id !== id));
   }
@@ -143,7 +148,6 @@ export const Dashboard = () => {
 
   const copyToClipboard = (text: string) => {
       navigator.clipboard.writeText(text);
-      // In a real app, show a toast
   }
 
   const handleLogout = async () => {
@@ -162,6 +166,19 @@ export const Dashboard = () => {
       });
   }, [entries, searchTerm, selectedCategory]);
 
+  // Helper to render the empty state description with bold parts
+  const renderEmptyDesc = () => {
+      const parts = t.emptyDesc.split(/<1>(.*?)<\/1>/);
+      if (parts.length === 3) {
+          return (
+              <>
+                {parts[0]} <strong className="text-amber-100">{parts[1]}</strong> {parts[2]}
+              </>
+          );
+      }
+      return t.emptyDesc;
+  }
+
   return (
     <div className="flex h-screen bg-dark-950 text-slate-200">
       {/* Sidebar */}
@@ -174,7 +191,7 @@ export const Dashboard = () => {
         </div>
         
         <nav className="flex-1 p-4 space-y-1">
-            <div className="px-3 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Categories</div>
+            <div className="px-3 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t.categories}</div>
             {CATEGORIES.map(cat => (
                 <button
                     key={cat}
@@ -186,17 +203,20 @@ export const Dashboard = () => {
                     }`}
                 >
                     <IconFolder size={18} />
-                    {cat}
+                    {cat === 'All' ? t.categoryAll : cat}
                 </button>
             ))}
         </nav>
 
-        <div className="p-4 border-t border-dark-800">
-            <div className="mb-4 px-3 text-xs text-slate-500 truncate">
+        <div className="p-4 border-t border-dark-800 space-y-3">
+            <div className="flex items-center justify-between px-2">
+                <LanguageToggle />
+            </div>
+            <div className="px-3 text-xs text-slate-500 truncate">
                 {user?.email}
             </div>
             <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition">
-                <IconLogout size={18} /> Logout
+                <IconLogout size={18} /> {t.logout}
             </button>
         </div>
       </aside>
@@ -210,7 +230,7 @@ export const Dashboard = () => {
                     <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                     <input 
                         type="text" 
-                        placeholder="Search vault..." 
+                        placeholder={t.searchPlaceholder}
                         className="w-full bg-dark-800 border-none rounded-lg py-2 pl-10 pr-4 text-sm text-white focus:ring-2 focus:ring-primary-500 placeholder:text-slate-600"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
@@ -221,14 +241,14 @@ export const Dashboard = () => {
                 onClick={() => setModalOpen(true)}
                 className="ml-4 bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-lg shadow-primary-500/20"
             >
-                <IconPlus size={18} /> <span className="hidden sm:inline">Add Entry</span>
+                <IconPlus size={18} /> <span className="hidden sm:inline">{t.addEntryBtn}</span>
             </button>
         </header>
 
         {/* List */}
         <div className="flex-1 overflow-y-auto p-6">
             {isLoadingData ? (
-                <div className="flex items-center justify-center h-full text-slate-500">Decrypting Vault...</div>
+                <div className="flex items-center justify-center h-full text-slate-500">{t.decrypting}</div>
             ) : entries.length === 0 ? (
                 // ZERO-KNOWLEDGE INITIALIZATION ONBOARDING STATE
                 <div className="flex flex-col items-center justify-center h-full p-6">
@@ -237,22 +257,21 @@ export const Dashboard = () => {
                             <IconShieldExclamation size={64} className="text-amber-500" />
                         </div>
                         
-                        <h2 className="text-3xl font-bold text-white mb-4 tracking-tight">Initialization Required</h2>
+                        <h2 className="text-3xl font-bold text-white mb-4 tracking-tight">{t.emptyTitle}</h2>
                         
                         <p className="text-slate-400 mb-6 text-lg leading-relaxed max-w-lg mx-auto">
-                            Your vault is currently empty. Because this is a <strong className="text-amber-100">Zero-Knowledge</strong> architecture, 
-                            your Master Password is not yet verified against any data.
+                            {renderEmptyDesc()}
                         </p>
                         
                         <div className="bg-dark-950/50 p-5 rounded-xl border border-dark-800 mb-8 text-sm text-slate-500 max-w-lg mx-auto">
-                            <strong>Security Notice:</strong> Please create your first entry immediately to cryptographically lock your vault and secure your account.
+                            <strong>{t.emptyNotice.split(':')[0]}:</strong> {t.emptyNotice.split(':')[1]}
                         </div>
                         
                         <button
                             onClick={() => setModalOpen(true)}
                             className="bg-amber-600 hover:bg-amber-500 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 mx-auto transition-all hover:scale-105 hover:shadow-lg hover:shadow-amber-500/20"
                         >
-                            <IconPlus size={24} /> Create First Entry
+                            <IconPlus size={24} /> {t.createFirstBtn}
                         </button>
                     </div>
                 </div>
@@ -260,7 +279,7 @@ export const Dashboard = () => {
                 // NO SEARCH RESULTS STATE
                 <div className="flex flex-col items-center justify-center h-full text-slate-500">
                     <IconFolder size={48} className="mb-4 opacity-20" />
-                    <p>No entries found matching your criteria.</p>
+                    <p>{t.noResults}</p>
                 </div>
             ) : (
                 // LIST STATE

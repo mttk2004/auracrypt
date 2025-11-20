@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { CreateEntryPayload, CATEGORIES, Category } from '../types';
 import { IconX, IconDeviceFloppy } from '@tabler/icons-react';
+import { useStore } from '../store/useStore';
+import { translations } from '../i18n/locales';
 
 interface Props {
   isOpen: boolean;
@@ -17,6 +19,10 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
     category: 'Other',
     notes: ''
   });
+  
+  const { language } = useStore();
+  const t = translations[language].modal;
+  const commonT = translations[language].common;
 
   if (!isOpen) return null;
 
@@ -45,7 +51,7 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="w-full max-w-lg bg-dark-900 border border-dark-800 rounded-xl shadow-2xl flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between p-6 border-b border-dark-800">
-          <h3 className="text-xl font-bold text-white">Add New Entry</h3>
+          <h3 className="text-xl font-bold text-white">{t.title}</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-white">
             <IconX size={24} />
           </button>
@@ -55,7 +61,7 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
           <form id="entry-form" onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
-                    <label className="block text-xs font-medium text-slate-400 mb-1 uppercase">Service Name</label>
+                    <label className="block text-xs font-medium text-slate-400 mb-1 uppercase">{t.serviceLabel}</label>
                     <input
                         type="text"
                         required
@@ -67,7 +73,7 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
                 </div>
                 
                 <div className="col-span-2 sm:col-span-1">
-                    <label className="block text-xs font-medium text-slate-400 mb-1 uppercase">Category</label>
+                    <label className="block text-xs font-medium text-slate-400 mb-1 uppercase">{t.categoryLabel}</label>
                     <select
                         className="w-full bg-dark-800 border border-dark-700 rounded-lg px-3 py-2 text-white focus:ring-1 focus:ring-primary-500 outline-none"
                         value={formData.category}
@@ -80,7 +86,7 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
                 </div>
 
                 <div className="col-span-2">
-                    <label className="block text-xs font-medium text-slate-400 mb-1 uppercase">Username / Email</label>
+                    <label className="block text-xs font-medium text-slate-400 mb-1 uppercase">{t.usernameLabel}</label>
                     <input
                         type="text"
                         className="w-full bg-dark-800 border border-dark-700 rounded-lg px-3 py-2 text-white focus:ring-1 focus:ring-primary-500 outline-none"
@@ -90,7 +96,7 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
                 </div>
 
                 <div className="col-span-2">
-                    <label className="block text-xs font-medium text-slate-400 mb-1 uppercase">Password</label>
+                    <label className="block text-xs font-medium text-slate-400 mb-1 uppercase">{t.passwordLabel}</label>
                     <div className="relative">
                         <input
                             type="text"
@@ -103,7 +109,7 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
                 </div>
 
                 <div className="col-span-2">
-                    <label className="block text-xs font-medium text-slate-400 mb-1 uppercase">Notes (Encrypted)</label>
+                    <label className="block text-xs font-medium text-slate-400 mb-1 uppercase">{t.notesLabel}</label>
                     <textarea
                         rows={3}
                         className="w-full bg-dark-800 border border-dark-700 rounded-lg px-3 py-2 text-white focus:ring-1 focus:ring-primary-500 outline-none"
@@ -121,7 +127,7 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
                 onClick={onClose}
                 className="px-4 py-2 rounded-lg text-slate-300 hover:bg-dark-800 transition"
             >
-                Cancel
+                {commonT.cancel}
             </button>
             <button 
                 type="submit" 
@@ -129,7 +135,7 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
                 disabled={loading}
                 className="px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-500 text-white font-medium transition flex items-center gap-2 disabled:opacity-50"
             >
-                {loading ? 'Encrypting...' : <><IconDeviceFloppy size={18} /> Save Entry</>}
+                {loading ? t.encrypting : <><IconDeviceFloppy size={18} /> {t.saveBtn}</>}
             </button>
         </div>
       </div>

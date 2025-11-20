@@ -2,8 +2,13 @@ import { create } from 'zustand';
 import { Session, User } from '@supabase/supabase-js';
 import { DecryptedEntry, DatabaseEntry } from '../types';
 import { exportKeyToString, importKeyFromString } from '../services/cryptoUtils';
+import { Language } from '../i18n/locales';
 
 interface AppState {
+  // Language State
+  language: Language;
+  setLanguage: (lang: Language) => void;
+
   // Auth State
   session: Session | null;
   user: User | null;
@@ -26,6 +31,13 @@ interface AppState {
 }
 
 export const useStore = create<AppState>((set, get) => ({
+  // Default to EN or load from localStorage
+  language: (localStorage.getItem('auracrypt_lang') as Language) || 'en',
+  setLanguage: (lang) => {
+      localStorage.setItem('auracrypt_lang', lang);
+      set({ language: lang });
+  },
+
   session: null,
   user: null,
   setSession: (session) => set({ session, user: session?.user ?? null }),
