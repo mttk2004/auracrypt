@@ -40,8 +40,29 @@ export const Dashboard = () => {
       for (const entry of (data as DatabaseEntry[])) {
         try {
             // Metadata is plaintext, sensitive data is decrypted
+            
+            // 1. Decrypt Password using the primary IV column
             const password = await decryptData(entry.encrypted_password, entry.iv, masterKey);
-            const notes = entry.encrypted_notes ? await decryptData(entry.encrypted_notes, entry.iv, masterKey) : '';
+            
+            // 2. Decrypt Notes
+            let notes = '';
+            if (entry.encrypted_notes) {
+                if (entry.encrypted_notes.includes(':')) {
+                    // New Format: "IV:Ciphertext"
+                    const [noteIv, noteCipher] = entry.encrypted_notes.split(':');
+                    if (noteIv && noteCipher) {
+                         notes = await decryptData(noteCipher, noteIv, masterKey);
+                    }
+                } else {
+                    // Fallback: Try using the entry's main IV (legacy format or data)
+                    try {
+                        notes = await decryptData(entry.encrypted_notes, entry.iv, masterKey);
+                    } catch (e) {
+                        // If fallback fails, assume empty or corrupted
+                        console.warn(`Failed to decrypt notes for entry ${entry.id} using fallback IV`);
+                    }
+                }
+            }
             
             decryptedList.push({
                 id: entry.id,
@@ -55,6 +76,7 @@ export const Dashboard = () => {
             });
         } catch (e) {
             console.error(`Failed to decrypt entry ${entry.id}`, e);
+            // We intentionally skip pushing failed entries so the UI doesn't break
         }
       }
       setEntries(decryptedList);
@@ -64,112 +86,7 @@ export const Dashboard = () => {
     fetchEntries();
   }, [user, masterKey, setEntries]);
 
-  // Add Entry
-  const handleAddEntry = async (payload: CreateEntryPayload) => {
-    if (!user || !masterKey) return;
-
-    // Encrypt sensitive fields
-    const { cipherText: encPassword, iv } = await encryptData(payload.password, masterKey);
-    let encNotes = null;
-    if (payload.notes) {
-        const result = await encryptData(payload.notes, masterKey);
-        encNotes = result.cipherText; 
-        // NOTE: In this simple implementation we use the same IV for both fields if generated together 
-        // OR we should technically generate a new IV. 
-        // For strict security, each field should ideally have its own IV or be packed.
-        // However, the prompt schema has one `iv` column per row. 
-        // Re-using IV with same Key for different plaintext is dangerous in CTR modes, 
-        // but GCM is robust if Key+IV pair is unique. 
-        // To be 100% safe with GCM and single IV column: We should pack the data or ensure the IV is never reused for the same key.
-        // Since we are generating a random IV per Row insert, it is safe for that Row.
-        // Wait, if we encrypt two fields with same IV and Key, we lose security guarantees.
-        // FIX: We should only use the IV for the password, and maybe concatenate notes?
-        // OR, simplest fix for this schema: The `iv` column is for the Password. 
-        // We will technically violate "Best Practice" if we reuse IV for Notes. 
-        // Let's assume `encrypted_notes` might have its IV prepended or just do it properly:
-        // *Correction*: I will re-encrypt notes with the SAME IV but this is bad practice.
-        // BETTER: I will only encrypt password for this demo to strictly adhere to safety, 
-        // or I will treat the schema's IV as "Entry IV" and assume risk is low for this demo.
-        // Actually, `crypto.subtle.encrypt` takes IV as param. 
-        // Let's use the `iv` for password. For notes, I will generate a new IV and prepend it to the string "IV:CIPHER".
-        // But the schema has `encrypted_notes text`. 
-        // Let's just use the single IV for the password for now and assume Notes are plaintext or 
-        // accept the risk of IV reuse for the sake of the provided schema structure in a fast-track.
-        // *Decision*: I will reuse IV for both fields to fit the single-column constraints of the provided prompt schema. 
-        // Ideally, DB should have `password_iv` and `notes_iv`.
-    }
-
-    // Reuse IV logic for schema compliance (Not Production Ready, but fits schema)
-    // To make it slightly safer, we could assume the IV is strictly for the password.
-    // Let's encrypt notes with the same IV.
-    const encNotesResult = payload.notes ? await encryptData(payload.notes, masterKey) : null;
-    // We ignore the new IV from notes and use the one from password, forcing the same IV? No that's hard with WebCrypto.
-    // We must use the IV returned by WebCrypto.
-    // OK, Strategy: We only store the IV for the Password in the `iv` column. 
-    // Notes will be prepended with their own IV in the `encrypted_notes` field like `IV|CIPHER`.
-    // But wait, prompt says "iv text not null -- Base64 string (12 bytes nonce)".
-    // Okay, I will use the Generated IV for the Password. 
-    // For Notes, I will Encrypt it using the SAME IV. (GCM with same Key+IV for different plaintexts is catastrophic - leaking XOR of plaintexts).
-    // CORRECT APPROACH given strict schema: I cannot reuse IV. 
-    // I will just encrypt the password. I will store the notes as Plaintext? No, requirement says "Các trường Nhạy cảm (password, notes) phải được Mã hóa".
-    // Modified Approach: I will JSON.stringify({p: password, n: notes}) and encrypt the WHOLE blob into `encrypted_password`? 
-    // No, schema has separate columns.
-    // OK, I will prepend the IV to the encrypted_notes string. The DB column `iv` is specifically for the password.
-    // `encrypted_notes` = `BASE64_IV:BASE64_CIPHER`.
-    // But for the code below, to keep it simple and "fast track", I will just accept the IV reuse risk or just encrypt password.
-    // Let's try to do it right: Prepend IV for notes.
-  };
-
-  // Re-implementation of Add Entry to be safe
-  const safeAddEntry = async (payload: CreateEntryPayload) => {
-      if (!user || !masterKey) return;
-
-      // 1. Encrypt Password
-      const pwEnc = await encryptData(payload.password, masterKey);
-      
-      // 2. Encrypt Notes (Generate new IV implicitly by calling encryptData again)
-      let notesCipherString = null;
-      if (payload.notes) {
-          const notesEnc = await encryptData(payload.notes, masterKey);
-          // Store as "IV:CIPHER"
-          notesCipherString = `${notesEnc.iv}:${notesEnc.cipherText}`;
-      }
-
-      const { error } = await supabase.from('entries').insert({
-          user_id: user.id,
-          service_name: payload.service_name,
-          username: payload.username,
-          category: payload.category,
-          encrypted_password: pwEnc.cipherText,
-          iv: pwEnc.iv, // The IV for the password
-          encrypted_notes: notesCipherString // Self-contained IV
-      });
-
-      if (error) {
-          console.error(error);
-          alert("Error saving to DB");
-      } else {
-          // Refresh local state triggers auto-fetch or we push manually. 
-          // For simplicity, force reload entries logic (or simplified push)
-          // Trigger re-fetch:
-          const dummyEvent = new Event('force-refresh'); // simplified, or just rely on useEffect dependencies if we managed them. 
-          // Actually, let's just manually add to local state to avoid refetch
-          // But we need the ID. Let's just re-fetch.
-          window.location.reload(); // Lazy dev way for "Fast Track". Better: Refetch function in store.
-      }
-  };
-  
-  // The generic `decryptData` utility expects strict args. 
-  // We need to handle the special `IV:CIPHER` format for notes in the fetch logic.
-  // Let's adjust the Fetch Logic in useEffect above.
-  
-  /* 
-   * ADJUSTED FETCH LOGIC FOR NOTES:
-   * const parts = entry.encrypted_notes.split(':');
-   * if(parts.length === 2) { await decryptData(parts[1], parts[0], masterKey) }
-   */
-
-  // Actual Save Handler
+  // Save Handler
   const onSaveEntry = async (payload: CreateEntryPayload) => {
       if (!user || !masterKey) return;
       
@@ -178,6 +95,7 @@ export const Dashboard = () => {
       let notesPayload = null;
       if (payload.notes) {
            const notesEnc = await encryptData(payload.notes, masterKey);
+           // Store as "IV:CIPHER" to ensure unique IV for notes
            notesPayload = `${notesEnc.iv}:${notesEnc.cipherText}`;
       }
 
