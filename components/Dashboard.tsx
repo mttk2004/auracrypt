@@ -6,6 +6,7 @@ import { DecryptedEntry, CreateEntryPayload, DatabaseEntry, Category, CATEGORIES
 import { EntryModal } from './EntryModal';
 import { translations } from '../i18n/locales';
 import { LanguageToggle } from './LanguageToggle';
+import { ThemeToggle } from './ThemeToggle';
 import { 
     IconSearch, IconPlus, IconLogout, IconCopy, 
     IconEye, IconEyeOff, IconFolder, IconShieldCheck, IconTrash,
@@ -172,7 +173,7 @@ export const Dashboard = () => {
       if (parts.length === 3) {
           return (
               <>
-                {parts[0]} <strong className="text-amber-100">{parts[1]}</strong> {parts[2]}
+                {parts[0]} <strong className="text-amber-600 dark:text-amber-100">{parts[1]}</strong> {parts[2]}
               </>
           );
       }
@@ -180,14 +181,14 @@ export const Dashboard = () => {
   }
 
   return (
-    <div className="flex h-screen bg-dark-950 text-slate-200">
+    <div className="flex h-screen bg-slate-50 dark:bg-dark-950 text-slate-900 dark:text-slate-200 transition-colors duration-300">
       {/* Sidebar */}
-      <aside className="w-64 bg-dark-900 border-r border-dark-800 flex flex-col hidden md:flex">
-        <div className="p-6 border-b border-dark-800 flex items-center gap-3">
+      <aside className="w-64 bg-white dark:bg-dark-900 border-r border-slate-200 dark:border-dark-800 flex flex-col hidden md:flex transition-colors duration-300">
+        <div className="p-6 border-b border-slate-200 dark:border-dark-800 flex items-center gap-3">
             <div className="p-2 bg-primary-600 rounded-lg">
                 <IconShieldCheck size={24} className="text-white" />
             </div>
-            <span className="text-lg font-bold tracking-tight text-white">AuraCrypt</span>
+            <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">AuraCrypt</span>
         </div>
         
         <nav className="flex-1 p-4 space-y-1">
@@ -198,8 +199,8 @@ export const Dashboard = () => {
                     onClick={() => setSelectedCategory(cat)}
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition ${
                         selectedCategory === cat 
-                        ? 'bg-primary-500/10 text-primary-400' 
-                        : 'text-slate-400 hover:bg-dark-800 hover:text-slate-200'
+                        ? 'bg-primary-50 text-primary-700 dark:bg-primary-500/10 dark:text-primary-400' 
+                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-800 hover:text-slate-900 dark:hover:text-slate-200'
                     }`}
                 >
                     <IconFolder size={18} />
@@ -208,14 +209,15 @@ export const Dashboard = () => {
             ))}
         </nav>
 
-        <div className="p-4 border-t border-dark-800 space-y-3">
-            <div className="flex items-center justify-between px-2">
+        <div className="p-4 border-t border-slate-200 dark:border-dark-800 space-y-3">
+            <div className="flex items-center justify-between px-2 gap-2">
+                <ThemeToggle />
                 <LanguageToggle />
             </div>
             <div className="px-3 text-xs text-slate-500 truncate">
                 {user?.email}
             </div>
-            <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition">
+            <button onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition">
                 <IconLogout size={18} /> {t.logout}
             </button>
         </div>
@@ -224,14 +226,14 @@ export const Dashboard = () => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
         {/* Header */}
-        <header className="h-16 bg-dark-900/50 backdrop-blur-md border-b border-dark-800 flex items-center justify-between px-6">
+        <header className="h-16 bg-white/80 dark:bg-dark-900/50 backdrop-blur-md border-b border-slate-200 dark:border-dark-800 flex items-center justify-between px-6 transition-colors duration-300">
             <div className="flex items-center gap-4 flex-1">
                 <div className="relative w-full max-w-md">
-                    <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                    <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={18} />
                     <input 
                         type="text" 
                         placeholder={t.searchPlaceholder}
-                        className="w-full bg-dark-800 border-none rounded-lg py-2 pl-10 pr-4 text-sm text-white focus:ring-2 focus:ring-primary-500 placeholder:text-slate-600"
+                        className="w-full bg-slate-100 dark:bg-dark-800 border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary-500 placeholder:text-slate-500 dark:placeholder:text-slate-600 transition-colors"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
@@ -239,7 +241,7 @@ export const Dashboard = () => {
             </div>
             <button 
                 onClick={() => setModalOpen(true)}
-                className="ml-4 bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-lg shadow-primary-500/20"
+                className="ml-4 bg-primary-600 hover:bg-primary-700 dark:hover:bg-primary-500 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-lg shadow-primary-500/20"
             >
                 <IconPlus size={18} /> <span className="hidden sm:inline">{t.addEntryBtn}</span>
             </button>
@@ -252,24 +254,24 @@ export const Dashboard = () => {
             ) : entries.length === 0 ? (
                 // ZERO-KNOWLEDGE INITIALIZATION ONBOARDING STATE
                 <div className="flex flex-col items-center justify-center h-full p-6">
-                    <div className="max-w-2xl w-full bg-dark-900/50 border-2 border-dashed border-amber-500/30 rounded-3xl p-10 text-center animate-in fade-in zoom-in duration-500">
-                        <div className="inline-flex p-5 rounded-full bg-amber-500/10 mb-6">
-                            <IconShieldExclamation size={64} className="text-amber-500" />
+                    <div className="max-w-2xl w-full bg-white dark:bg-dark-900/50 border-2 border-dashed border-amber-300 dark:border-amber-500/30 rounded-3xl p-10 text-center animate-in fade-in zoom-in duration-500">
+                        <div className="inline-flex p-5 rounded-full bg-amber-100 dark:bg-amber-500/10 mb-6">
+                            <IconShieldExclamation size={64} className="text-amber-600 dark:text-amber-500" />
                         </div>
                         
-                        <h2 className="text-3xl font-bold text-white mb-4 tracking-tight">{t.emptyTitle}</h2>
+                        <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4 tracking-tight">{t.emptyTitle}</h2>
                         
-                        <p className="text-slate-400 mb-6 text-lg leading-relaxed max-w-lg mx-auto">
+                        <p className="text-slate-600 dark:text-slate-400 mb-6 text-lg leading-relaxed max-w-lg mx-auto">
                             {renderEmptyDesc()}
                         </p>
                         
-                        <div className="bg-dark-950/50 p-5 rounded-xl border border-dark-800 mb-8 text-sm text-slate-500 max-w-lg mx-auto">
+                        <div className="bg-slate-50 dark:bg-dark-950/50 p-5 rounded-xl border border-slate-200 dark:border-dark-800 mb-8 text-sm text-slate-600 dark:text-slate-500 max-w-lg mx-auto">
                             <strong>{t.emptyNotice.split(':')[0]}:</strong> {t.emptyNotice.split(':')[1]}
                         </div>
                         
                         <button
                             onClick={() => setModalOpen(true)}
-                            className="bg-amber-600 hover:bg-amber-500 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 mx-auto transition-all hover:scale-105 hover:shadow-lg hover:shadow-amber-500/20"
+                            className="bg-amber-600 hover:bg-amber-700 dark:hover:bg-amber-500 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 mx-auto transition-all hover:scale-105 hover:shadow-lg hover:shadow-amber-500/20"
                         >
                             <IconPlus size={24} /> {t.createFirstBtn}
                         </button>
@@ -285,39 +287,39 @@ export const Dashboard = () => {
                 // LIST STATE
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                     {filteredEntries.map(entry => (
-                        <div key={entry.id} className="group bg-dark-900 border border-dark-800 rounded-xl p-5 hover:border-primary-500/50 transition-all shadow-sm hover:shadow-md relative">
+                        <div key={entry.id} className="group bg-white dark:bg-dark-900 border border-slate-200 dark:border-dark-800 rounded-xl p-5 hover:border-primary-500/50 dark:hover:border-primary-500/50 transition-all shadow-sm hover:shadow-md relative">
                             <div className="flex justify-between items-start mb-3">
                                 <div>
-                                    <h3 className="font-bold text-white text-lg">{entry.service_name}</h3>
+                                    <h3 className="font-bold text-slate-900 dark:text-white text-lg">{entry.service_name}</h3>
                                     <p className="text-xs text-slate-500">{entry.username || 'No username'}</p>
                                 </div>
-                                <span className="text-[10px] font-bold uppercase tracking-wider bg-dark-800 text-slate-400 px-2 py-1 rounded">
+                                <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-dark-800 text-slate-500 dark:text-slate-400 px-2 py-1 rounded">
                                     {entry.category}
                                 </span>
                             </div>
 
-                            <div className="bg-dark-950 rounded-lg p-3 mb-3 border border-dark-800 flex items-center justify-between">
-                                <div className="font-mono text-sm truncate mr-2 text-primary-200">
+                            <div className="bg-slate-50 dark:bg-dark-950 rounded-lg p-3 mb-3 border border-slate-200 dark:border-dark-800 flex items-center justify-between">
+                                <div className="font-mono text-sm truncate mr-2 text-primary-700 dark:text-primary-200">
                                     {revealedPasswords.has(entry.id) ? entry.password : '•••••••••••••'}
                                 </div>
                                 <div className="flex gap-1">
-                                    <button onClick={() => toggleReveal(entry.id)} className="p-1.5 text-slate-500 hover:text-white rounded hover:bg-dark-800">
+                                    <button onClick={() => toggleReveal(entry.id)} className="p-1.5 text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-white rounded hover:bg-slate-200 dark:hover:bg-dark-800 transition">
                                         {revealedPasswords.has(entry.id) ? <IconEyeOff size={16}/> : <IconEye size={16}/>}
                                     </button>
-                                    <button onClick={() => copyToClipboard(entry.password)} className="p-1.5 text-slate-500 hover:text-white rounded hover:bg-dark-800">
+                                    <button onClick={() => copyToClipboard(entry.password)} className="p-1.5 text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-white rounded hover:bg-slate-200 dark:hover:bg-dark-800 transition">
                                         <IconCopy size={16}/>
                                     </button>
                                 </div>
                             </div>
                             
                             {entry.notes && (
-                                <p className="text-xs text-slate-400 line-clamp-2 mb-3 italic border-l-2 border-dark-700 pl-2">
+                                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3 italic border-l-2 border-slate-200 dark:border-dark-700 pl-2">
                                     {entry.notes}
                                 </p>
                             )}
 
                             <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-2 right-2">
-                                <button onClick={() => handleDelete(entry.id)} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg">
+                                <button onClick={() => handleDelete(entry.id)} className="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-500/10 rounded-lg transition">
                                     <IconTrash size={16} />
                                 </button>
                             </div>

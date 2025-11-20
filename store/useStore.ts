@@ -4,7 +4,13 @@ import { DecryptedEntry, DatabaseEntry } from '../types';
 import { exportKeyToString, importKeyFromString } from '../services/cryptoUtils';
 import { Language } from '../i18n/locales';
 
+type Theme = 'light' | 'dark';
+
 interface AppState {
+  // Theme State
+  theme: Theme;
+  toggleTheme: () => void;
+
   // Language State
   language: Language;
   setLanguage: (lang: Language) => void;
@@ -31,6 +37,21 @@ interface AppState {
 }
 
 export const useStore = create<AppState>((set, get) => ({
+  // Theme Logic
+  theme: (localStorage.getItem('auracrypt_theme') as Theme) || 'dark',
+  toggleTheme: () => {
+    const newTheme = get().theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('auracrypt_theme', newTheme);
+    set({ theme: newTheme });
+    
+    // Apply class immediately
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  },
+
   // Default to EN or load from localStorage
   language: (localStorage.getItem('auracrypt_lang') as Language) || 'en',
   setLanguage: (lang) => {

@@ -163,8 +163,8 @@ export const VaultUnlock = () => {
 
   if (mode === 'checking') {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
-        <div className="flex flex-col items-center gap-4 text-primary-500">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-50/90 dark:bg-black/90">
+        <div className="flex flex-col items-center gap-4 text-primary-600 dark:text-primary-500">
           <IconLoader2 className="animate-spin" size={48} />
           <p className="text-sm font-mono">{t.checking}</p>
         </div>
@@ -173,19 +173,21 @@ export const VaultUnlock = () => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-950/90 backdrop-blur-md p-4">
-      <div className="w-full max-w-md bg-dark-900 border border-dark-800 rounded-2xl p-8 shadow-2xl animate-in fade-in zoom-in duration-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-100/90 dark:bg-dark-950/90 backdrop-blur-md p-4 transition-colors duration-300">
+      <div className="w-full max-w-md bg-white dark:bg-dark-900 border border-slate-200 dark:border-dark-800 rounded-2xl p-8 shadow-2xl animate-in fade-in zoom-in duration-300">
         
         <div className="text-center mb-8">
           <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
-            mode === 'setup' ? 'bg-primary-500/10 text-primary-500' : 'bg-amber-500/10 text-amber-500'
+            mode === 'setup' 
+              ? 'bg-primary-100 text-primary-600 dark:bg-primary-500/10 dark:text-primary-500' 
+              : 'bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-500'
           }`}>
             {mode === 'setup' ? <IconShieldLock size={32} /> : <IconLockOpen size={32} />}
           </div>
-          <h2 className="text-2xl font-bold text-white">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
             {mode === 'setup' ? t.setupTitle : t.unlockTitle}
           </h2>
-          <p className="text-slate-400 text-sm mt-2 px-4">
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-2 px-4">
             {mode === 'setup' ? t.setupDesc : t.unlockDesc}
           </p>
         </div>
@@ -197,7 +199,7 @@ export const VaultUnlock = () => {
               type="password"
               autoFocus
               required
-              className="w-full bg-dark-800 border border-dark-700 focus:border-primary-500 rounded-lg px-4 py-3 text-white text-center text-lg tracking-widest focus:ring-1 focus:ring-primary-500 outline-none transition placeholder:text-slate-600 placeholder:tracking-normal placeholder:text-base"
+              className="w-full bg-slate-50 dark:bg-dark-800 border border-slate-300 dark:border-dark-700 focus:border-primary-500 dark:focus:border-primary-500 rounded-lg px-4 py-3 text-slate-900 dark:text-white text-center text-lg tracking-widest focus:ring-1 focus:ring-primary-500 outline-none transition placeholder:text-slate-400 dark:placeholder:text-slate-600 placeholder:tracking-normal placeholder:text-base"
               placeholder={t.masterPwPlaceholder}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -209,7 +211,7 @@ export const VaultUnlock = () => {
                <input
                 type="password"
                 required
-                className="w-full bg-dark-800 border border-dark-700 focus:border-primary-500 rounded-lg px-4 py-3 text-white text-center text-lg tracking-widest focus:ring-1 focus:ring-primary-500 outline-none transition placeholder:text-slate-600 placeholder:tracking-normal placeholder:text-base"
+                className="w-full bg-slate-50 dark:bg-dark-800 border border-slate-300 dark:border-dark-700 focus:border-primary-500 dark:focus:border-primary-500 rounded-lg px-4 py-3 text-slate-900 dark:text-white text-center text-lg tracking-widest focus:ring-1 focus:ring-primary-500 outline-none transition placeholder:text-slate-400 dark:placeholder:text-slate-600 placeholder:tracking-normal placeholder:text-base"
                 placeholder={t.confirmPwPlaceholder}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -218,7 +220,7 @@ export const VaultUnlock = () => {
           )}
 
           {errorMsg && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-2 text-red-400 text-sm animate-pulse">
+            <div className="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg flex items-center gap-2 text-red-600 dark:text-red-400 text-sm animate-pulse">
               <IconAlertTriangle size={18} />
               <span>{errorMsg}</span>
             </div>
@@ -229,8 +231,8 @@ export const VaultUnlock = () => {
             disabled={loading || !password}
             className={`w-full py-3 rounded-lg text-white font-semibold transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
               mode === 'setup' 
-                ? 'bg-primary-600 hover:bg-primary-500' 
-                : 'bg-amber-600 hover:bg-amber-500'
+                ? 'bg-primary-600 hover:bg-primary-700 dark:hover:bg-primary-500' 
+                : 'bg-amber-600 hover:bg-amber-700 dark:hover:bg-amber-500'
             }`}
           >
             {loading ? (
@@ -243,11 +245,11 @@ export const VaultUnlock = () => {
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-dark-800 text-center">
+        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-dark-800 text-center">
           <button
             type="button"
             onClick={handleEmergencyReset}
-            className="text-xs text-slate-600 hover:text-red-500 transition flex items-center justify-center gap-1 mx-auto group cursor-pointer px-4 py-2 rounded hover:bg-dark-800"
+            className="text-xs text-slate-500 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-500 transition flex items-center justify-center gap-1 mx-auto group cursor-pointer px-4 py-2 rounded hover:bg-slate-100 dark:hover:bg-dark-800"
           >
             <IconTrash size={14} className="group-hover:scale-110 transition-transform" />
             <span>{t.resetBtn}</span>
