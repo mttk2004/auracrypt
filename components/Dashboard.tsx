@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useStore } from '../store/useStore';
 import { supabase } from '../supabaseClient';
 import { DecryptedEntry } from '../types';
@@ -18,11 +18,27 @@ import { EntryCard } from './EntryCard';
 
 import { translations } from '../i18n/locales';
 import { 
-    IconSearch, IconPlus, IconFolder, IconShieldExclamation, IconMenu2 
+    IconSearch, IconPlus, IconFolder, IconShieldExclamation, IconMenu2,
+    IconLock, IconAlertTriangle, IconCategory
 } from '@tabler/icons-react';
 
+const StatCard = ({ label, value, icon: Icon, colorClass, onClick }: any) => (
+    <div 
+        onClick={onClick}
+        className="bg-white/60 dark:bg-dark-900/60 backdrop-blur-md border border-slate-200 dark:border-dark-800 p-4 rounded-2xl shadow-sm flex items-center gap-4 hover:scale-[1.02] transition-transform cursor-pointer group"
+    >
+        <div className={`p-3 rounded-xl ${colorClass} group-hover:scale-110 transition-transform`}>
+            <Icon size={24} />
+        </div>
+        <div>
+            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</p>
+            <h4 className="text-2xl font-bold text-slate-900 dark:text-white">{value}</h4>
+        </div>
+    </div>
+);
+
 export const Dashboard = () => {
-  const { user, lockVault, language, fetchCategories, addToast } = useStore();
+  const { user, lockVault, language, fetchCategories, addToast, categories } = useStore();
   const t = translations[language].dashboard;
   const commonT = translations[language].common;
 
@@ -45,6 +61,13 @@ export const Dashboard = () => {
   useEffect(() => {
       if (user) fetchCategories();
   }, [user, fetchCategories]);
+
+  // Calculate Stats
+  const stats = useMemo(() => {
+      const total = entries.length;
+      const weak = entries.filter(e => e.password.length < 8 || !/\d/.test(e.password)).length;
+      return { total, weak };
+  }, [entries]);
 
   const handleAddNewClick = () => {
       setEntryToEdit(null);
@@ -92,10 +115,10 @@ export const Dashboard = () => {
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-dark-950 text-slate-900 dark:text-slate-200 transition-colors duration-300">
+    <div className="flex h-screen bg-transparent text-slate-900 dark:text-slate-200 transition-colors duration-300">
       
       {/* Desktop Sidebar */}
-      <aside className="w-64 hidden md:flex flex-col z-20">
+      <aside className="w-64 hidden md:flex flex-col z-20 bg-white/80 dark:bg-dark-900/80 backdrop-blur-xl border-r border-slate-200 dark:border-dark-800">
         <Sidebar 
             selectedCategory={selectedCategory}
             onSelectCategory={setSelectedCategory}
@@ -112,7 +135,7 @@ export const Dashboard = () => {
                 className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                 onClick={() => setMobileMenuOpen(false)}
             ></div>
-            <div className="absolute inset-y-0 left-0 w-72 z-50 animate-in slide-in-from-left duration-300 shadow-2xl">
+            <div className="absolute inset-y-0 left-0 w-72 z-50 animate-in slide-in-from-left duration-300 shadow-2xl bg-white dark:bg-dark-900">
                 <Sidebar 
                     selectedCategory={selectedCategory}
                     onSelectCategory={setSelectedCategory}
@@ -127,11 +150,11 @@ export const Dashboard = () => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
         {/* Header */}
-        <header className="h-16 bg-white/80 dark:bg-dark-900/50 backdrop-blur-md border-b border-slate-200 dark:border-dark-800 flex items-center justify-between px-4 sm:px-6 transition-colors duration-300 z-10">
+        <header className="h-20 flex items-center justify-between px-4 sm:px-8 transition-colors duration-300 z-10 pt-4">
             <div className="flex items-center gap-3 flex-1">
                 <button 
                     onClick={() => setMobileMenuOpen(true)}
-                    className="md:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-dark-800 rounded-lg"
+                    className="md:hidden p-2 -ml-2 text-slate-500 hover:bg-white/50 dark:hover:bg-dark-800 rounded-lg"
                 >
                     <IconMenu2 size={24} />
                 </button>
@@ -141,7 +164,7 @@ export const Dashboard = () => {
                     <input 
                         type="text" 
                         placeholder={t.searchPlaceholder}
-                        className="w-full bg-slate-100 dark:bg-dark-800 border-none rounded-lg py-2 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary-500 placeholder:text-slate-500 dark:placeholder:text-slate-600 transition-colors"
+                        className="w-full bg-white/60 dark:bg-dark-900/60 backdrop-blur-md border border-slate-200 dark:border-dark-700 rounded-xl py-3 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 placeholder:text-slate-500 dark:placeholder:text-slate-600 transition-all shadow-sm"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
@@ -149,23 +172,50 @@ export const Dashboard = () => {
             </div>
             <button 
                 onClick={handleAddNewClick}
-                className="ml-3 bg-primary-600 hover:bg-primary-700 dark:hover:bg-primary-500 text-white px-3 sm:px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition shadow-lg shadow-primary-500/20 whitespace-nowrap"
+                className="ml-3 bg-primary-600 hover:bg-primary-700 dark:hover:bg-primary-500 text-white px-4 sm:px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary-500/20 hover:shadow-primary-500/40 hover:-translate-y-0.5 whitespace-nowrap"
             >
-                <IconPlus size={18} /> <span className="hidden sm:inline">{t.addEntryBtn}</span>
+                <IconPlus size={20} /> <span className="hidden sm:inline">{t.addEntryBtn}</span>
             </button>
         </header>
 
         {/* List Area */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8">
+            
+            {/* Stats Area */}
+            {!isLoadingData && entries.length > 0 && !searchTerm && selectedCategory === 'All' && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                    <StatCard 
+                        label="Total Vault Items" 
+                        value={stats.total} 
+                        icon={IconLock} 
+                        colorClass="bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400"
+                    />
+                    <StatCard 
+                        label="Security Checks" 
+                        value={stats.weak > 0 ? `${stats.weak} Weak` : "All Good"} 
+                        icon={IconAlertTriangle} 
+                        colorClass={stats.weak > 0 ? "bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400" : "bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-400"}
+                        onClick={() => setActiveModal('health')}
+                    />
+                     <StatCard 
+                        label="Categories" 
+                        value={categories.length} 
+                        icon={IconCategory} 
+                        colorClass="bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400"
+                        onClick={() => setActiveModal('category')}
+                    />
+                </div>
+            )}
+
             {isLoadingData ? (
                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
                     {[...Array(6)].map((_, i) => <SkeletonEntry key={i} />)}
                  </div>
             ) : entries.length === 0 && !searchTerm && selectedCategory === 'All' ? (
                 // ZERO-KNOWLEDGE INITIALIZATION ONBOARDING STATE
-                <div className="flex flex-col items-center justify-center h-full p-6">
-                    <div className="max-w-2xl w-full bg-white dark:bg-dark-900/50 border-2 border-dashed border-amber-300 dark:border-amber-500/30 rounded-3xl p-10 text-center animate-in fade-in zoom-in duration-500">
-                        <div className="inline-flex p-5 rounded-full bg-amber-100 dark:bg-amber-500/10 mb-6">
+                <div className="flex flex-col items-center justify-center h-full pb-20">
+                    <div className="max-w-2xl w-full bg-white/60 dark:bg-dark-900/60 backdrop-blur-md border border-slate-200 dark:border-dark-800 rounded-3xl p-10 text-center animate-in fade-in zoom-in duration-500 shadow-2xl">
+                        <div className="inline-flex p-5 rounded-full bg-amber-100 dark:bg-amber-500/10 mb-6 shadow-inner">
                             <IconShieldExclamation size={64} className="text-amber-600 dark:text-amber-500" />
                         </div>
                         
@@ -175,7 +225,7 @@ export const Dashboard = () => {
                             {renderEmptyDesc()}
                         </p>
                         
-                        <div className="bg-slate-50 dark:bg-dark-950/50 p-5 rounded-xl border border-slate-200 dark:border-dark-800 mb-8 text-sm text-slate-600 dark:text-slate-500 max-w-lg mx-auto">
+                        <div className="bg-slate-50/80 dark:bg-dark-950/50 p-5 rounded-xl border border-slate-200 dark:border-dark-800 mb-8 text-sm text-slate-600 dark:text-slate-500 max-w-lg mx-auto">
                             <strong>{t.emptyNotice.split(':')[0]}:</strong> {t.emptyNotice.split(':')[1]}
                         </div>
                         
@@ -189,7 +239,7 @@ export const Dashboard = () => {
                 </div>
             ) : entries.length === 0 ? (
                 // NO SEARCH RESULTS STATE
-                <div className="flex flex-col items-center justify-center h-full text-slate-500">
+                <div className="flex flex-col items-center justify-center h-64 text-slate-500">
                     <IconFolder size={48} className="mb-4 opacity-20" />
                     <p>{t.noResults}</p>
                 </div>

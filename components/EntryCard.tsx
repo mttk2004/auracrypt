@@ -76,6 +76,16 @@ export const EntryCard: React.FC<Props> = ({ entry, onEdit, onDelete, onShare })
         }
     };
 
+    // Determine Strength Color (Simple heuristic)
+    const getStrengthColor = () => {
+        if (entry.type !== 'login') return 'bg-slate-300 dark:bg-slate-600'; // Neutral for non-passwords
+        const len = entry.password.length;
+        if (len === 0) return 'bg-slate-300';
+        if (len < 8) return 'bg-red-500 shadow-red-500/50';
+        if (len < 12) return 'bg-amber-500 shadow-amber-500/50';
+        return 'bg-green-500 shadow-green-500/50';
+    };
+
     // --- Render Content based on Type ---
     const renderContent = () => {
         if (entry.type === 'card' && payload) {
@@ -126,12 +136,12 @@ export const EntryCard: React.FC<Props> = ({ entry, onEdit, onDelete, onShare })
     };
 
     return (
-        <div className="group relative bg-white dark:bg-dark-900 border border-slate-200 dark:border-dark-800 rounded-2xl shadow-sm hover:shadow-lg hover:border-primary-500/30 transition-all duration-300 flex flex-col overflow-hidden">
+        <div className="group relative bg-white/70 dark:bg-dark-900/70 backdrop-blur-md border border-slate-200 dark:border-dark-800 rounded-2xl shadow-sm hover:shadow-xl hover:border-primary-500/30 transition-all duration-300 flex flex-col overflow-hidden hover:-translate-y-1">
             
             {/* 1. HEADER (Identity) */}
             <div className="p-5 pb-0 flex items-start justify-between">
                 <div className="flex items-center gap-4 overflow-hidden">
-                    <div className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-dark-800 border border-slate-100 dark:border-dark-700 flex items-center justify-center shrink-0 p-2">
+                    <div className="w-12 h-12 rounded-xl bg-white dark:bg-dark-800 border border-slate-100 dark:border-dark-700 flex items-center justify-center shrink-0 p-2 shadow-sm">
                         {entry.type === 'card' ? (
                              <IconCreditCard className="text-slate-400 dark:text-slate-500" size={24} />
                         ) : entry.type === 'identity' ? (
@@ -144,24 +154,24 @@ export const EntryCard: React.FC<Props> = ({ entry, onEdit, onDelete, onShare })
                     </div>
                     <div className="min-w-0">
                         <h3 className="font-bold text-lg text-slate-900 dark:text-white truncate leading-tight">{entry.service_name}</h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{entry.username || '—'}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                            <p className="text-sm text-slate-500 dark:text-slate-400 truncate max-w-[150px]">{entry.username || '—'}</p>
+                            {entry.type === 'login' && (
+                                <div className={`w-2 h-2 rounded-full shadow-sm ${getStrengthColor()}`} title="Password Strength Indicator" />
+                            )}
+                        </div>
                     </div>
                 </div>
                 <div className="flex flex-col items-end gap-1">
                      <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-dark-800 text-slate-500 dark:text-slate-400 px-2.5 py-1 rounded-md border border-slate-200 dark:border-dark-700 shrink-0">
                         {entry.category}
                     </span>
-                    {entry.type !== 'login' && (
-                        <span className="text-[9px] font-bold uppercase text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded">
-                            {entry.type}
-                        </span>
-                    )}
                 </div>
             </div>
 
             {/* 2. SECURE ZONE (Password / Data) */}
             <div className="p-5">
-                <div className="bg-slate-50 dark:bg-dark-950/50 border border-slate-200 dark:border-dark-800 rounded-xl p-3 pl-4 flex items-center justify-between group/pass transition-colors hover:border-primary-500/30 hover:bg-primary-50/5 dark:hover:bg-primary-900/10">
+                <div className="bg-slate-50/80 dark:bg-dark-950/50 border border-slate-200 dark:border-dark-800 rounded-xl p-3 pl-4 flex items-center justify-between group/pass transition-colors hover:border-primary-500/30 hover:bg-primary-50/10 dark:hover:bg-primary-900/10">
                     <div className="flex-1 min-w-0">
                         {renderContent()}
                     </div>
@@ -188,7 +198,7 @@ export const EntryCard: React.FC<Props> = ({ entry, onEdit, onDelete, onShare })
             </div>
 
             {/* 3. FOOTER ACTION BAR */}
-            <div className="mt-auto border-t border-slate-100 dark:border-dark-800 bg-slate-50/50 dark:bg-dark-900/30 px-4 py-3 flex items-center justify-between">
+            <div className="mt-auto border-t border-slate-100 dark:border-dark-800 bg-slate-50/30 dark:bg-dark-900/30 px-4 py-3 flex items-center justify-between">
                 {/* Left: Launch / Meta */}
                 <div className="flex items-center gap-3">
                     {entry.url && (
@@ -210,7 +220,7 @@ export const EntryCard: React.FC<Props> = ({ entry, onEdit, onDelete, onShare })
                 </div>
 
                 {/* Right: Manage Actions */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <button 
                         onClick={() => onShare(entry)} 
                         className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition" 
@@ -233,6 +243,10 @@ export const EntryCard: React.FC<Props> = ({ entry, onEdit, onDelete, onShare })
                         <IconTrash size={16} />
                     </button>
                 </div>
+                 {/* Keep one visible if not hovering for mobile mostly, but css handles hover primarily */}
+                 <div className="flex md:hidden items-center gap-1">
+                    <button onClick={() => onEdit(entry)} className="p-1.5 text-slate-500"><IconPencil size={16} /></button>
+                 </div>
             </div>
         </div>
     );
