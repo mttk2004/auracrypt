@@ -344,35 +344,44 @@ export const Dashboard = () => {
              </button>
         </nav>
 
-        <div className="p-4 border-t border-slate-200 dark:border-dark-800 space-y-3 bg-slate-50/50 dark:bg-dark-900/50">
-            <div className="flex items-center justify-between px-2 gap-2">
-                <ThemeToggle />
-                <LanguageToggle />
+        <div className="p-4 border-t border-slate-200 dark:border-dark-800 bg-slate-50/50 dark:bg-dark-900/50">
+            {/* Account Info & Toggles Row */}
+            <div className="flex items-center justify-between mb-3 px-1">
+                <div className="flex flex-col min-w-0 mr-2">
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Account</span>
+                    <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate font-mono" title={user?.email}>
+                        {user?.email}
+                    </div>
+                </div>
+                <div className="flex items-center gap-1 shrink-0 scale-90 origin-right">
+                    <ThemeToggle />
+                    <LanguageToggle />
+                </div>
             </div>
-            <div className="px-3 text-xs text-slate-500 truncate font-mono">
-                {user?.email}
+
+            {/* Actions Grid */}
+            <div className="space-y-1">
+                <button 
+                    onClick={() => { setSettingsOpen(true); setMobileMenuOpen(false); }} 
+                    className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-dark-800 hover:text-slate-900 dark:hover:text-white rounded-lg transition border border-transparent hover:border-slate-200 dark:hover:border-dark-700 hover:shadow-sm"
+                >
+                    <IconSettings size={16} /> {t.settings}
+                </button>
+
+                <button 
+                    onClick={() => { setAboutOpen(true); setMobileMenuOpen(false); }} 
+                    className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-dark-800 hover:text-slate-900 dark:hover:text-white rounded-lg transition border border-transparent hover:border-slate-200 dark:hover:border-dark-700 hover:shadow-sm"
+                >
+                    <IconInfoCircle size={16} /> {t.about}
+                </button>
+
+                <button 
+                    onClick={handleLogout} 
+                    className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-500 dark:text-slate-500 hover:bg-red-50 dark:hover:bg-red-900/10 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition group"
+                >
+                    <IconLogout size={16} className="group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors" /> {t.logout}
+                </button>
             </div>
-
-            <button 
-                onClick={() => { setSettingsOpen(true); setMobileMenuOpen(false); }} 
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-800 rounded-lg transition"
-            >
-                <IconSettings size={18} /> {t.settings}
-            </button>
-
-            <button 
-                onClick={() => { setAboutOpen(true); setMobileMenuOpen(false); }} 
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-800 rounded-lg transition"
-            >
-                <IconInfoCircle size={18} /> {t.about}
-            </button>
-
-            <button 
-                onClick={handleLogout} 
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition"
-            >
-                <IconLogout size={18} /> {t.logout}
-            </button>
         </div>
       </div>
   );
