@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { CreateEntryPayload, DecryptedEntry } from '../types';
 import { 
     IconX, IconDeviceFloppy, IconWand, IconRefresh, 
@@ -8,65 +8,7 @@ import {
 } from '@tabler/icons-react';
 import { useStore } from '../store/useStore';
 import { translations } from '../i18n/locales';
-
-// Mapping of common service names to their URLs
-const SERVICE_DOMAINS: Record<string, string> = {
-    // Social & Tech
-    'facebook': 'https://facebook.com',
-    'fb': 'https://facebook.com',
-    'google': 'https://google.com',
-    'gmail': 'https://google.com',
-    'youtube': 'https://youtube.com',
-    'twitter': 'https://twitter.com',
-    'x': 'https://x.com',
-    'instagram': 'https://instagram.com',
-    'linkedin': 'https://linkedin.com',
-    'github': 'https://github.com',
-    'tiktok': 'https://tiktok.com',
-    'discord': 'https://discord.com',
-    'reddit': 'https://reddit.com',
-    'pinterest': 'https://pinterest.com',
-    'twitch': 'https://twitch.tv',
-    'whatsapp': 'https://whatsapp.com',
-    'telegram': 'https://telegram.org',
-    'slack': 'https://slack.com',
-    'zoom': 'https://zoom.us',
-    'microsoft': 'https://microsoft.com',
-    'apple': 'https://apple.com',
-    'amazon': 'https://amazon.com',
-    'netflix': 'https://netflix.com',
-    'spotify': 'https://spotify.com',
-    'dropbox': 'https://dropbox.com',
-    'adobe': 'https://adobe.com',
-    'chatgpt': 'https://chat.openai.com',
-    'openai': 'https://openai.com',
-    'claude': 'https://claude.ai',
-    'notion': 'https://notion.so',
-    'figma': 'https://figma.com',
-    'canva': 'https://canva.com',
-    
-    // Crypto & Finance
-    'binance': 'https://binance.com',
-    'coinbase': 'https://coinbase.com',
-    'paypal': 'https://paypal.com',
-    'stripe': 'https://stripe.com',
-    'metamask': 'https://metamask.io',
-    
-    // Vietnam Specific
-    'zalo': 'https://chat.zalo.me',
-    'shopee': 'https://shopee.vn',
-    'tiki': 'https://tiki.vn',
-    'lazada': 'https://lazada.vn',
-    'momo': 'https://momo.vn',
-    'vng': 'https://vng.com.vn',
-    'vnexpress': 'https://vnexpress.net',
-    'zing': 'https://zingnews.vn',
-    'vcb': 'https://vcb_digibank.vietcombank.com.vn',
-    'vietcombank': 'https://vcb_digibank.vietcombank.com.vn',
-    'techcombank': 'https://techcombank.com.vn',
-    'mbbank': 'https://mbbank.com.vn',
-    'vpbank': 'https://vpbank.com.vn',
-};
+import { useEntryForm } from '../hooks/useEntryForm';
 
 interface Props {
   isOpen: boolean;
@@ -76,157 +18,26 @@ interface Props {
 }
 
 export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave, entryToEdit }) => {
-  const { language, addToast, categories } = useStore();
+  const { language, categories } = useStore();
   const t = translations[language].modal;
   const commonT = translations[language].common;
 
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<CreateEntryPayload>({
-    service_name: '',
-    username: '',
-    url: '',
-    password: '',
-    category: 'Other',
-    notes: ''
+  const {
+      formData, setFormData, loading,
+      showPassword, setShowPassword,
+      showGenerator, setShowGenerator,
+      genLength, setGenLength,
+      includeNum, setIncludeNum,
+      includeSym, setIncludeSym,
+      generatedPass, generatePassword, useGeneratedPassword,
+      handleUrlChange, handleUrlBlur, handleServiceNameChange,
+      handleSubmit
+  } = useEntryForm({ 
+      entryToEdit, 
+      isOpen, 
+      onSave, 
+      onSuccess: onClose 
   });
-
-  // UI State
-  const [showPassword, setShowPassword] = useState(false);
-  const [isUrlManuallyEdited, setIsUrlManuallyEdited] = useState(false);
-  
-  // Generator State
-  const [showGenerator, setShowGenerator] = useState(false);
-  const [genLength, setGenLength] = useState(16);
-  const [includeNum, setIncludeNum] = useState(true);
-  const [includeSym, setIncludeSym] = useState(true);
-  const [generatedPass, setGeneratedPass] = useState('');
-
-  // Reset or Populate state when opening
-  useEffect(() => {
-    if (isOpen) {
-        if (entryToEdit) {
-            // Edit Mode: Pre-fill data
-            setFormData({
-                service_name: entryToEdit.service_name,
-                username: entryToEdit.username || '',
-                url: entryToEdit.url || '',
-                password: entryToEdit.password,
-                category: entryToEdit.category,
-                notes: entryToEdit.notes || ''
-            });
-            // If editing, assume URL is intentional (manual) so we don't auto-change it
-            setIsUrlManuallyEdited(true);
-        } else {
-            // Create Mode: Reset
-            setFormData({
-                service_name: '',
-                username: '',
-                url: '',
-                password: '',
-                category: 'Other',
-                notes: ''
-            });
-            setIsUrlManuallyEdited(false);
-        }
-        setShowGenerator(false);
-        setShowPassword(false);
-    }
-  }, [isOpen, entryToEdit]);
-
-  // Password Generator Logic
-  useEffect(() => {
-      if (showGenerator) {
-          generatePassword();
-      }
-  }, [genLength, includeNum, includeSym, showGenerator]);
-
-  const generatePassword = () => {
-      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      const nums = '0123456789';
-      const syms = '!@#$%^&*()_+-=[]{}|;:,.<>?';
-      
-      let charset = chars;
-      if (includeNum) charset += nums;
-      if (includeSym) charset += syms;
-
-      let pass = '';
-      // Ensure at least one of each selected type exists
-      const required = [];
-      if (includeNum) required.push(nums[Math.floor(Math.random() * nums.length)]);
-      if (includeSym) required.push(syms[Math.floor(Math.random() * syms.length)]);
-
-      // Fill the rest
-      for (let i = 0; i < genLength - required.length; i++) {
-          pass += charset.charAt(Math.floor(Math.random() * charset.length));
-      }
-
-      // Add required chars and shuffle
-      pass += required.join('');
-      pass = pass.split('').sort(() => 0.5 - Math.random()).join('');
-      
-      setGeneratedPass(pass);
-  };
-
-  const useGeneratedPassword = () => {
-      setFormData({ ...formData, password: generatedPass });
-      setShowGenerator(false);
-      setShowPassword(true); // Show password when generated
-  };
-
-  // Auto-fix URL
-  const handleUrlBlur = () => {
-      let url = formData.url.trim();
-      if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
-          url = 'https://' + url;
-          setFormData({ ...formData, url });
-      }
-  };
-
-  // Handle manual URL changes
-  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const val = e.target.value;
-      setFormData({ ...formData, url: val });
-      // If user clears the field, allow auto-fill to work again (not manually edited).
-      // If user types something, lock it (manually edited).
-      setIsUrlManuallyEdited(val.length > 0);
-  };
-
-  // Handle Service Name change with Smart Auto-Complete URL
-  const handleServiceNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const name = e.target.value;
-      const lowerName = name.toLowerCase().trim();
-      
-      let newUrl = formData.url;
-      const autoUrl = SERVICE_DOMAINS[lowerName];
-
-      // Smart Logic:
-      // Update URL if we found a match AND (User hasn't manually locked the field OR the field is empty)
-      if (autoUrl && (!isUrlManuallyEdited || !newUrl)) {
-          newUrl = autoUrl;
-          // Note: We don't set isUrlManuallyEdited to true here, keeping it in "auto" mode
-      }
-
-      setFormData({
-          ...formData, 
-          service_name: name,
-          url: newUrl
-      });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      await onSave(formData);
-      addToast('success', "Entry saved successfully");
-      onClose();
-    } catch (error) {
-      console.error(error);
-      addToast('error', "Failed to save entry");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (!isOpen) return null;
 
