@@ -5,16 +5,17 @@ import { useStore } from '../store/useStore';
 import { translations } from '../i18n/locales';
 import { 
     IconWorld, IconShieldCheck, IconCopy, IconEye, 
-    IconEyeOff, IconExternalLink, IconNote, IconPencil, IconTrash 
+    IconEyeOff, IconExternalLink, IconNote, IconPencil, IconTrash, IconShare 
 } from '@tabler/icons-react';
 
 interface Props {
     entry: DecryptedEntry;
     onEdit: (entry: DecryptedEntry) => void;
     onDelete: (id: string) => void;
+    onShare: (entry: DecryptedEntry) => void;
 }
 
-export const EntryCard: React.FC<Props> = ({ entry, onEdit, onDelete }) => {
+export const EntryCard: React.FC<Props> = ({ entry, onEdit, onDelete, onShare }) => {
     const { language, addToast } = useStore();
     const commonT = translations[language].common;
     const modalT = translations[language].modal;
@@ -124,6 +125,13 @@ export const EntryCard: React.FC<Props> = ({ entry, onEdit, onDelete }) => {
 
                 {/* Right: Manage Actions */}
                 <div className="flex items-center gap-1">
+                    <button 
+                        onClick={() => onShare(entry)} 
+                        className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition" 
+                        title="Secure Share"
+                    >
+                        <IconShare size={16} />
+                    </button>
                     <button 
                         onClick={() => onEdit(entry)} 
                         className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-slate-200 dark:hover:bg-dark-700 rounded transition" 

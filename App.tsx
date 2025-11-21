@@ -5,9 +5,10 @@ import { useStore } from './store/useStore';
 import { Auth } from './components/Auth';
 import { VaultUnlock } from './components/VaultUnlock';
 import { Dashboard } from './components/Dashboard';
-import { ExtensionDashboard } from './components/ExtensionDashboard'; // Import new component
+import { ExtensionDashboard } from './components/ExtensionDashboard';
 import { AutoLockHandler } from './components/AutoLockHandler';
 import { ToastContainer } from './components/Toast';
+import { ShareView } from './components/ShareView'; // Import new component
 import { translations } from './i18n/locales';
 
 declare var chrome: any;
@@ -16,6 +17,7 @@ const App = () => {
   const { session, setSession, isVaultUnlocked, initializeVaultFromStorage, language, theme } = useStore();
   const [isInitializing, setIsInitializing] = useState(true);
   const [isExtension, setIsExtension] = useState(false);
+  const [isShareLink, setIsShareLink] = useState(false);
 
   useEffect(() => {
     // 0. Initialize Theme
@@ -25,7 +27,15 @@ const App = () => {
         document.documentElement.classList.remove('dark');
     }
     
-    // Check if running in Extension environment (Chrome/Edge)
+    // 1. Check if this is a Share Link route
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('share')) {
+        setIsShareLink(true);
+        setIsInitializing(false);
+        return; // Stop auth flow for public share view
+    }
+
+    // 2. Check if running in Extension environment (Chrome/Edge)
     if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id) {
         setIsExtension(true);
         // In extension popup, body width is usually fixed small
@@ -34,11 +44,11 @@ const App = () => {
         document.body.classList.add('overflow-hidden');
     }
 
-    // 1. Check Supabase Session
+    // 3. Check Supabase Session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       
-      // 2. If session exists, try to restore Vault Key from SessionStorage
+      // 4. If session exists, try to restore Vault Key from SessionStorage
       if (session) {
         initializeVaultFromStorage().then(() => {
             setIsInitializing(false);
@@ -59,6 +69,10 @@ const App = () => {
 
     return () => subscription.unsubscribe();
   }, [setSession, initializeVaultFromStorage, theme]);
+
+  if (isShareLink) {
+      return <ShareView />;
+  }
 
   if (isInitializing) {
     return (

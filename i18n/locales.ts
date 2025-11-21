@@ -145,6 +145,28 @@ export const translations = {
         authorTitle: "About the Author",
         contactBtn: "Contact Author",
         followBtn: "Follow on GitHub"
+    },
+    share: {
+      title: "Secure Sharing (Magic Link)",
+      desc: "Create a time-limited, encrypted link to share this password securely. The server cannot see the data.",
+      config: "Configuration",
+      expiration: "Expiration",
+      views: "Max Views",
+      burn: "Burn after reading (1 view)",
+      hour1: "1 Hour",
+      hour24: "24 Hours",
+      day7: "7 Days",
+      generating: "Generating secure link...",
+      ready: "Link Ready!",
+      copy: "Copy Link",
+      copied: "Copied!",
+      warning: "Anyone with this link can view the password.",
+      viewTitle: "Secure Shared Entry",
+      viewDesc: "You have received a secure credential via AuraCrypt.",
+      viewBurned: "This message has been destroyed.",
+      viewExpired: "This link has expired or does not exist.",
+      viewOpen: "Reveal Secret",
+      viewLoading: "Decryption in progress...",
     }
   },
   vn: {
@@ -292,6 +314,28 @@ export const translations = {
         authorTitle: "Về Tác Giả",
         contactBtn: "Liên Hệ Tác Giả",
         followBtn: "Theo dõi Github"
+    },
+    share: {
+      title: "Chia Sẻ Bảo Mật (Magic Link)",
+      desc: "Tạo link mã hóa có thời hạn để chia sẻ mật khẩu an toàn. Server không thể xem nội dung.",
+      config: "Cấu hình",
+      expiration: "Hết hạn sau",
+      views: "Số lần xem",
+      burn: "Hủy sau khi đọc (1 lần)",
+      hour1: "1 Giờ",
+      hour24: "24 Giờ",
+      day7: "7 Ngày",
+      generating: "Đang tạo link bảo mật...",
+      ready: "Link đã sẵn sàng!",
+      copy: "Sao chép Link",
+      copied: "Đã chép!",
+      warning: "Bất kỳ ai có link này đều xem được mật khẩu.",
+      viewTitle: "Thông Tin Được Chia Sẻ",
+      viewDesc: "Bạn nhận được một thông tin bảo mật qua AuraCrypt.",
+      viewBurned: "Thông tin này đã bị hủy.",
+      viewExpired: "Link này đã hết hạn hoặc không tồn tại.",
+      viewOpen: "Xem Bí Mật",
+      viewLoading: "Đang giải mã...",
     }
   }
 };

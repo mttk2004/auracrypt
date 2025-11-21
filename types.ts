@@ -33,6 +33,19 @@ export interface CategoryItem {
   created_at?: string;
 }
 
+export interface ShareConfig {
+  views: number; // 1 means burn after read
+  hours: number; // 1, 24, 72, etc.
+}
+
+export interface SharedDataPayload {
+  service_name: string;
+  username: string;
+  password: string;
+  url: string;
+  notes: string;
+}
+
 // Category is now just a string alias as it is dynamic
 export type Category = string; 
 

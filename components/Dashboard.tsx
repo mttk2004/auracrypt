@@ -11,6 +11,7 @@ import { SettingsModal } from './SettingsModal';
 import { HealthCheckModal } from './HealthCheckModal';
 import { CategoryModal } from './CategoryModal';
 import { AboutModal } from './AboutModal';
+import { ShareModal } from './ShareModal';
 import { SkeletonEntry } from './SkeletonEntry';
 import { Sidebar } from './Sidebar';
 import { EntryCard } from './EntryCard';
@@ -34,8 +35,9 @@ export const Dashboard = () => {
   // Modals State
   const [isModalOpen, setModalOpen] = useState(false);
   const [entryToEdit, setEntryToEdit] = useState<DecryptedEntry | null>(null);
-  const [activeModal, setActiveModal] = useState<'settings' | 'health' | 'category' | 'about' | null>(null);
-  
+  const [activeModal, setActiveModal] = useState<'settings' | 'health' | 'category' | 'about' | 'share' | null>(null);
+  const [entryToShare, setEntryToShare] = useState<DecryptedEntry | null>(null);
+
   // UI State
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   
@@ -53,6 +55,11 @@ export const Dashboard = () => {
   const handleEditClick = (entry: DecryptedEntry) => {
       setEntryToEdit(entry);
       setModalOpen(true);
+  };
+
+  const handleShareClick = (entry: DecryptedEntry) => {
+      setEntryToShare(entry);
+      setActiveModal('share');
   };
 
   const handleDeleteWrapper = async (id: string) => {
@@ -195,6 +202,7 @@ export const Dashboard = () => {
                             entry={entry} 
                             onEdit={handleEditClick}
                             onDelete={handleDeleteWrapper}
+                            onShare={handleShareClick}
                         />
                     ))}
                 </div>
@@ -207,6 +215,12 @@ export const Dashboard = () => {
         onClose={() => setModalOpen(false)} 
         onSave={(data) => handleSaveEntry(data, entryToEdit)}
         entryToEdit={entryToEdit}
+      />
+
+      <ShareModal
+        isOpen={activeModal === 'share'}
+        onClose={() => setActiveModal(null)}
+        entry={entryToShare}
       />
 
       <SettingsModal 
