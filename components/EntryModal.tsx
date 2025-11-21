@@ -9,6 +9,65 @@ import {
 import { useStore } from '../store/useStore';
 import { translations } from '../i18n/locales';
 
+// Mapping of common service names to their URLs
+const SERVICE_DOMAINS: Record<string, string> = {
+    // Social & Tech
+    'facebook': 'https://facebook.com',
+    'fb': 'https://facebook.com',
+    'google': 'https://google.com',
+    'gmail': 'https://google.com',
+    'youtube': 'https://youtube.com',
+    'twitter': 'https://twitter.com',
+    'x': 'https://x.com',
+    'instagram': 'https://instagram.com',
+    'linkedin': 'https://linkedin.com',
+    'github': 'https://github.com',
+    'tiktok': 'https://tiktok.com',
+    'discord': 'https://discord.com',
+    'reddit': 'https://reddit.com',
+    'pinterest': 'https://pinterest.com',
+    'twitch': 'https://twitch.tv',
+    'whatsapp': 'https://whatsapp.com',
+    'telegram': 'https://telegram.org',
+    'slack': 'https://slack.com',
+    'zoom': 'https://zoom.us',
+    'microsoft': 'https://microsoft.com',
+    'apple': 'https://apple.com',
+    'amazon': 'https://amazon.com',
+    'netflix': 'https://netflix.com',
+    'spotify': 'https://spotify.com',
+    'dropbox': 'https://dropbox.com',
+    'adobe': 'https://adobe.com',
+    'chatgpt': 'https://chat.openai.com',
+    'openai': 'https://openai.com',
+    'claude': 'https://claude.ai',
+    'notion': 'https://notion.so',
+    'figma': 'https://figma.com',
+    'canva': 'https://canva.com',
+    
+    // Crypto & Finance
+    'binance': 'https://binance.com',
+    'coinbase': 'https://coinbase.com',
+    'paypal': 'https://paypal.com',
+    'stripe': 'https://stripe.com',
+    'metamask': 'https://metamask.io',
+    
+    // Vietnam Specific
+    'zalo': 'https://chat.zalo.me',
+    'shopee': 'https://shopee.vn',
+    'tiki': 'https://tiki.vn',
+    'lazada': 'https://lazada.vn',
+    'momo': 'https://momo.vn',
+    'vng': 'https://vng.com.vn',
+    'vnexpress': 'https://vnexpress.net',
+    'zing': 'https://zingnews.vn',
+    'vcb': 'https://vcb_digibank.vietcombank.com.vn',
+    'vietcombank': 'https://vcb_digibank.vietcombank.com.vn',
+    'techcombank': 'https://techcombank.com.vn',
+    'mbbank': 'https://mbbank.com.vn',
+    'vpbank': 'https://vpbank.com.vn',
+};
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -33,6 +92,7 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave, entryToEd
 
   // UI State
   const [showPassword, setShowPassword] = useState(false);
+  const [isUrlManuallyEdited, setIsUrlManuallyEdited] = useState(false);
   
   // Generator State
   const [showGenerator, setShowGenerator] = useState(false);
@@ -54,6 +114,8 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave, entryToEd
                 category: entryToEdit.category,
                 notes: entryToEdit.notes || ''
             });
+            // If editing, assume URL is intentional (manual) so we don't auto-change it
+            setIsUrlManuallyEdited(true);
         } else {
             // Create Mode: Reset
             setFormData({
@@ -64,6 +126,7 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave, entryToEd
                 category: 'Other',
                 notes: ''
             });
+            setIsUrlManuallyEdited(false);
         }
         setShowGenerator(false);
         setShowPassword(false);
@@ -117,6 +180,37 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave, entryToEd
           url = 'https://' + url;
           setFormData({ ...formData, url });
       }
+  };
+
+  // Handle manual URL changes
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const val = e.target.value;
+      setFormData({ ...formData, url: val });
+      // If user clears the field, allow auto-fill to work again (not manually edited).
+      // If user types something, lock it (manually edited).
+      setIsUrlManuallyEdited(val.length > 0);
+  };
+
+  // Handle Service Name change with Smart Auto-Complete URL
+  const handleServiceNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const name = e.target.value;
+      const lowerName = name.toLowerCase().trim();
+      
+      let newUrl = formData.url;
+      const autoUrl = SERVICE_DOMAINS[lowerName];
+
+      // Smart Logic:
+      // Update URL if we found a match AND (User hasn't manually locked the field OR the field is empty)
+      if (autoUrl && (!isUrlManuallyEdited || !newUrl)) {
+          newUrl = autoUrl;
+          // Note: We don't set isUrlManuallyEdited to true here, keeping it in "auto" mode
+      }
+
+      setFormData({
+          ...formData, 
+          service_name: name,
+          url: newUrl
+      });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -176,8 +270,8 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave, entryToEd
                             required
                             className="w-full bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-dark-700 rounded-xl py-3 pl-10 pr-4 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition shadow-sm"
                             value={formData.service_name}
-                            onChange={e => setFormData({...formData, service_name: e.target.value})}
-                            placeholder="e.g. Netflix, Google, Binance"
+                            onChange={handleServiceNameChange}
+                            placeholder="e.g. Facebook, Google, Binance"
                             autoFocus
                         />
                     </div>
@@ -236,7 +330,7 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave, entryToEd
                             type="text"
                             className="w-full bg-slate-50 dark:bg-dark-950 border border-slate-200 dark:border-dark-700 rounded-xl py-3 pl-10 pr-4 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition shadow-sm"
                             value={formData.url || ''}
-                            onChange={e => setFormData({...formData, url: e.target.value})}
+                            onChange={handleUrlChange}
                             onBlur={handleUrlBlur}
                             placeholder="google.com"
                         />
