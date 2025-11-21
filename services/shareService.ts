@@ -58,9 +58,10 @@ export const createShareLink = async (entry: DecryptedEntry, config: ShareConfig
     // Base64 encode the key JSON to make it URL safe and look cleaner
     const keyB64 = btoa(keyJson);
     
-    // 7. Construct URL
-    // Format: https://domain.com/?share=<UUID>#key=<KEY>
-    const shareUrl = `${window.location.origin}/?share=${data.id}#key=${keyB64}`;
+    // 7. Construct URL using Hash Routing to avoid 404s on static hosts
+    // Format: https://domain.com/#share?id=<UUID>&key=<KEY>
+    // This ensures the server only sees request for '/' which serves index.html
+    const shareUrl = `${window.location.origin}/#share?id=${data.id}&key=${keyB64}`;
     
     return shareUrl;
 };

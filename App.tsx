@@ -27,9 +27,9 @@ const App = () => {
         document.documentElement.classList.remove('dark');
     }
     
-    // 1. Check if this is a Share Link route
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('share')) {
+    // 1. Check if this is a Share Link route using Hash Strategy
+    // Format: /#share?id=...&key=...
+    if (window.location.hash.startsWith('#share')) {
         setIsShareLink(true);
         setIsInitializing(false);
         return; // Stop auth flow for public share view

@@ -26,20 +26,26 @@ export const ShareView = () => {
         setError(null);
         
         try {
-            // 1. Parse URL params
-            const urlParams = new URLSearchParams(window.location.search);
-            const id = urlParams.get('share');
-            
-            // 2. Parse Hash for Key (#key=...)
+            // Parse URL from Hash
+            // Expected format: #share?id=...&key=...
             const hash = window.location.hash;
-            const keyMatch = hash.match(/key=([^&]*)/);
-            const keyB64 = keyMatch ? keyMatch[1] : null;
-
-            if (!id || !keyB64) {
+            if (!hash.startsWith('#share')) {
                 throw new Error("Invalid Link Format");
             }
 
-            // 3. Service Call
+            // Extract query string part from hash (remove #share)
+            // #share?id=... -> ?id=...
+            const queryString = hash.replace('#share', '');
+            const urlParams = new URLSearchParams(queryString);
+            
+            const id = urlParams.get('id');
+            const keyB64 = urlParams.get('key');
+
+            if (!id || !keyB64) {
+                throw new Error("Invalid Link Parameters");
+            }
+
+            // Service Call
             const result = await getSharedEntry(id, keyB64);
             setData(result);
             setRevealed(true);
