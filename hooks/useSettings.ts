@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { useStore } from '../store/useStore';
 import { translations } from '../i18n/locales';
@@ -161,6 +162,7 @@ export const useSettings = () => {
 
                 return {
                     user_id: user.id,
+                    type: p.type,
                     service_name: p.service_name,
                     username: p.username,
                     url: p.url || null,
@@ -180,6 +182,7 @@ export const useSettings = () => {
                     newDecryptedEntries.push({
                         id: dbEntry.id,
                         user_id: user.id,
+                        type: payload.type,
                         service_name: payload.service_name,
                         username: payload.username,
                         url: payload.url,

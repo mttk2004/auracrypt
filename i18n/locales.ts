@@ -61,7 +61,14 @@ export const translations = {
     },
     modal: {
       title: "Add New Entry",
-      serviceLabel: "Service Name",
+      types: {
+        login: "Login",
+        card: "Card",
+        identity: "Identity"
+      },
+      serviceLabel: "Service / Site Name",
+      bankLabel: "Bank / Issuer",
+      idLabel: "Identity Name",
       urlLabel: "Website URL",
       categoryLabel: "Category",
       usernameLabel: "Username / Email",
@@ -76,6 +83,18 @@ export const translations = {
       includeNum: "0-9 Numbers",
       includeSym: "!@# Symbols",
       copied: "Copied!",
+      // Card Fields
+      cardholder: "Cardholder Name",
+      cardNumber: "Card Number",
+      cardExp: "Expires (MM/YY)",
+      cardCvv: "CVV / CVC",
+      cardPin: "PIN Code",
+      // Identity Fields
+      fullName: "Full Name",
+      license: "License No.",
+      passport: "Passport No.",
+      address: "Address",
+      phone: "Phone Number"
     },
     settings: {
       title: "Vault Settings",
@@ -230,7 +249,14 @@ export const translations = {
     },
     modal: {
       title: "Thêm Mục Mới",
-      serviceLabel: "Tên Dịch Vụ",
+      types: {
+        login: "Đăng Nhập",
+        card: "Thẻ Tín Dụng",
+        identity: "Danh Tính"
+      },
+      serviceLabel: "Tên Dịch Vụ / Web",
+      bankLabel: "Ngân Hàng / Nhà Phát Hành",
+      idLabel: "Tên Hồ Sơ",
       urlLabel: "URL Trang Web",
       categoryLabel: "Danh Mục",
       usernameLabel: "Tên đăng nhập / Email",
@@ -245,6 +271,18 @@ export const translations = {
       includeNum: "0-9 Số",
       includeSym: "!@# Ký tự đặc biệt",
       copied: "Đã chép!",
+      // Card
+      cardholder: "Chủ Thẻ",
+      cardNumber: "Số Thẻ",
+      cardExp: "Hết Hạn (MM/YY)",
+      cardCvv: "Mã CVV",
+      cardPin: "Mã PIN",
+      // Identity
+      fullName: "Họ Tên Đầy Đủ",
+      license: "Số Bằng Lái",
+      passport: "Số Hộ Chiếu",
+      address: "Địa Chỉ",
+      phone: "Số Điện Thoại"
     },
     settings: {
       title: "Cài Đặt Két",

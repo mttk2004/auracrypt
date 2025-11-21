@@ -116,6 +116,7 @@ export const parseImportCSV = async (file: File): Promise<CreateEntryPayload[]> 
     // Require at least a service name or url, and a password
     if ((service_name || url) && password) {
       results.push({
+        type: 'login',
         service_name: service_name || url || 'Unknown',
         username: username || '',
         url: url || '',

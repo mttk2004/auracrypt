@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { CreateEntryPayload, DecryptedEntry } from '../types';
+import { CreateEntryPayload, DecryptedEntry, EntryType, CardData, IdentityData } from '../types';
 import { useStore } from '../store/useStore';
 
 // Mapping of common service names to their URLs
@@ -73,13 +73,25 @@ export const useEntryForm = ({ entryToEdit, isOpen, onSave, onSuccess }: UseEntr
     const { addToast } = useStore();
     const [loading, setLoading] = useState(false);
     
-    const [formData, setFormData] = useState<CreateEntryPayload>({
-        service_name: '',
-        username: '',
-        url: '',
-        password: '',
-        category: 'Other',
-        notes: ''
+    // Core Data
+    const [entryType, setEntryType] = useState<EntryType>('login');
+    const [serviceName, setServiceName] = useState('');
+    const [category, setCategory] = useState('Other');
+    const [notes, setNotes] = useState('');
+
+    // Login Specific
+    const [username, setUsername] = useState('');
+    const [url, setUrl] = useState('');
+    const [password, setPassword] = useState('');
+
+    // Card Specific
+    const [cardData, setCardData] = useState<CardData>({
+        cardholder: '', number: '', expiry: '', cvv: '', pin: ''
+    });
+
+    // Identity Specific
+    const [identityData, setIdentityData] = useState<IdentityData>({
+        fullName: '', license: '', passport: '', address: '', phone: ''
     });
 
     // UI State
@@ -97,24 +109,47 @@ export const useEntryForm = ({ entryToEdit, isOpen, onSave, onSuccess }: UseEntr
     useEffect(() => {
         if (isOpen) {
             if (entryToEdit) {
-                setFormData({
-                    service_name: entryToEdit.service_name,
-                    username: entryToEdit.username || '',
-                    url: entryToEdit.url || '',
-                    password: entryToEdit.password,
-                    category: entryToEdit.category,
-                    notes: entryToEdit.notes || ''
-                });
+                setEntryType(entryToEdit.type || 'login');
+                setServiceName(entryToEdit.service_name);
+                setCategory(entryToEdit.category);
+                setNotes(entryToEdit.notes);
+                setUrl(entryToEdit.url || '');
+                
+                // Populate based on type
+                if (entryToEdit.type === 'card') {
+                    try {
+                        const parsed = JSON.parse(entryToEdit.password);
+                        setCardData(parsed);
+                        setUsername(entryToEdit.username || ''); // Cardholder matches username field in DB often
+                    } catch (e) {
+                        setCardData({ cardholder: '', number: '', expiry: '', cvv: '', pin: '' });
+                    }
+                } else if (entryToEdit.type === 'identity') {
+                    try {
+                        const parsed = JSON.parse(entryToEdit.password);
+                        setIdentityData(parsed);
+                        setUsername(entryToEdit.username || ''); 
+                    } catch (e) {
+                        setIdentityData({ fullName: '', license: '', passport: '', address: '', phone: '' });
+                    }
+                } else {
+                    // Login
+                    setUsername(entryToEdit.username || '');
+                    setPassword(entryToEdit.password);
+                }
+
                 setIsUrlManuallyEdited(true);
             } else {
-                setFormData({
-                    service_name: '',
-                    username: '',
-                    url: '',
-                    password: '',
-                    category: 'Other',
-                    notes: ''
-                });
+                // Reset defaults
+                setEntryType('login');
+                setServiceName('');
+                setCategory('Other');
+                setNotes('');
+                setUsername('');
+                setUrl('');
+                setPassword('');
+                setCardData({ cardholder: '', number: '', expiry: '', cvv: '', pin: '' });
+                setIdentityData({ fullName: '', license: '', passport: '', address: '', phone: '' });
                 setIsUrlManuallyEdited(false);
             }
             setShowGenerator(false);
@@ -154,49 +189,68 @@ export const useEntryForm = ({ entryToEdit, isOpen, onSave, onSuccess }: UseEntr
     };
 
     const useGeneratedPassword = () => {
-        setFormData({ ...formData, password: generatedPass });
+        setPassword(generatedPass);
         setShowGenerator(false);
         setShowPassword(true);
     };
 
     // Auto-fix URL
     const handleUrlBlur = () => {
-        let url = formData.url.trim();
-        if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
-            url = 'https://' + url;
-            setFormData({ ...formData, url });
+        let u = url.trim();
+        if (u && !u.startsWith('http://') && !u.startsWith('https://')) {
+            u = 'https://' + u;
+            setUrl(u);
         }
     };
 
     const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value;
-        setFormData({ ...formData, url: val });
+        setUrl(val);
         setIsUrlManuallyEdited(val.length > 0);
     };
 
     const handleServiceNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const name = e.target.value;
-        const lowerName = name.toLowerCase().trim();
+        setServiceName(name);
         
-        let newUrl = formData.url;
-        const autoUrl = SERVICE_DOMAINS[lowerName];
-
-        if (autoUrl && (!isUrlManuallyEdited || !newUrl)) {
-            newUrl = autoUrl;
+        // Only auto-fill URL for Login type
+        if (entryType === 'login') {
+            const lowerName = name.toLowerCase().trim();
+            const autoUrl = SERVICE_DOMAINS[lowerName];
+            if (autoUrl && (!isUrlManuallyEdited || !url)) {
+                setUrl(autoUrl);
+            }
         }
-
-        setFormData({
-            ...formData, 
-            service_name: name,
-            url: newUrl
-        });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         try {
-            await onSave(formData);
+            let payloadPassword = '';
+            let payloadUsername = username;
+
+            // Pack data based on type
+            if (entryType === 'card') {
+                payloadPassword = JSON.stringify(cardData);
+                payloadUsername = cardData.cardholder; // Sync for searchability
+            } else if (entryType === 'identity') {
+                payloadPassword = JSON.stringify(identityData);
+                payloadUsername = identityData.fullName; // Sync for searchability
+            } else {
+                payloadPassword = password;
+            }
+
+            await onSave({
+                type: entryType,
+                service_name: serviceName,
+                username: payloadUsername,
+                url: url,
+                category: category,
+                password: payloadPassword,
+                notes: notes
+            });
+
             addToast('success', "Entry saved successfully");
             onSuccess();
         } catch (error) {
@@ -208,19 +262,22 @@ export const useEntryForm = ({ entryToEdit, isOpen, onSave, onSuccess }: UseEntr
     };
 
     return {
-        formData,
-        setFormData,
+        entryType, setEntryType,
+        serviceName, setServiceName,
+        category, setCategory,
+        notes, setNotes,
+        username, setUsername,
+        url, setUrl,
+        password, setPassword,
+        cardData, setCardData,
+        identityData, setIdentityData,
+        
         loading,
-        showPassword,
-        setShowPassword,
-        showGenerator,
-        setShowGenerator,
-        genLength,
-        setGenLength,
-        includeNum,
-        setIncludeNum,
-        includeSym,
-        setIncludeSym,
+        showPassword, setShowPassword,
+        showGenerator, setShowGenerator,
+        genLength, setGenLength,
+        includeNum, setIncludeNum,
+        includeSym, setIncludeSym,
         generatedPass,
         generatePassword,
         useGeneratedPassword,

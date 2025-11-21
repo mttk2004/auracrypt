@@ -53,6 +53,7 @@ export const useVaultData = () => {
                     decryptedList.push({
                         id: entry.id,
                         user_id: entry.user_id,
+                        type: entry.type || 'login', // Default to login for old entries
                         service_name: entry.service_name,
                         username: entry.username,
                         url: entry.url,
@@ -76,6 +77,7 @@ export const useVaultData = () => {
     const handleSaveEntry = async (payload: CreateEntryPayload, entryToEdit?: DecryptedEntry | null) => {
         if (!user || !masterKey) return;
       
+        // Payload.password contains the actual secret (string or JSON string)
         const pwEnc = await encryptData(payload.password, masterKey);
       
         let notesPayload = null;
@@ -86,6 +88,7 @@ export const useVaultData = () => {
 
         if (entryToEdit) {
             const { data, error } = await supabase.from('entries').update({
+                type: payload.type,
                 service_name: payload.service_name,
                 username: payload.username,
                 url: payload.url || null,
@@ -102,6 +105,7 @@ export const useVaultData = () => {
             if (data) {
                 const updatedEntry: DecryptedEntry = {
                     ...entryToEdit,
+                    type: payload.type,
                     service_name: payload.service_name,
                     username: payload.username,
                     url: payload.url,
@@ -114,6 +118,7 @@ export const useVaultData = () => {
         } else {
             const { data, error } = await supabase.from('entries').insert({
                 user_id: user.id,
+                type: payload.type,
                 service_name: payload.service_name,
                 username: payload.username,
                 url: payload.url || null,
@@ -129,6 +134,7 @@ export const useVaultData = () => {
                 const newEntry: DecryptedEntry = {
                     id: data[0].id,
                     user_id: user.id,
+                    type: payload.type,
                     service_name: payload.service_name,
                     username: payload.username,
                     url: payload.url,
