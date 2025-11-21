@@ -1,165 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { deriveKeyFromPassword, decryptData } from '../services/cryptoUtils';
+import React from 'react';
+import { useVaultAuth } from '../hooks/useVaultAuth';
 import { useStore } from '../store/useStore';
-import { supabase } from '../supabaseClient';
-import { DatabaseEntry } from '../types';
 import { translations } from '../i18n/locales';
 import { 
-  IconKey, IconLockOpen, IconShieldLock, IconAlertTriangle, 
+  IconLockOpen, IconShieldLock, IconAlertTriangle, 
   IconTrash, IconCheck, IconLoader2 
 } from '@tabler/icons-react';
 
-type VaultMode = 'checking' | 'setup' | 'unlock';
-
 export const VaultUnlock = () => {
-  const [mode, setMode] = useState<VaultMode>('checking');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [testEntry, setTestEntry] = useState<DatabaseEntry | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  const setMasterKey = useStore((state) => state.setMasterKey);
-  const session = useStore((state) => state.session);
+  const { 
+      mode, password, setPassword, confirmPassword, setConfirmPassword, 
+      loading, errorMsg, handleUnlock, handleSetup, handleEmergencyReset 
+  } = useVaultAuth();
+  
   const { language } = useStore();
   const t = translations[language].vault;
-
-  // 1. Check Vault Status on Mount
-  useEffect(() => {
-    const checkVaultStatus = async () => {
-      if (!session?.user) return;
-      
-      try {
-        // Fetch the latest entry to verify password against
-        const { data, error } = await supabase
-          .from('entries')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-          setMode('setup');
-          setTestEntry(null);
-        } else {
-          setTestEntry(data[0] as DatabaseEntry);
-          setMode('unlock');
-        }
-      } catch (err) {
-        console.error("Failed to check vault status:", err);
-        setErrorMsg(t.networkError);
-      }
-    };
-
-    checkVaultStatus();
-  }, [session, t.networkError]);
-
-  // 2. Logic for Unlock (Existing User)
-  const handleUnlock = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg(null);
-    setLoading(true);
-
-    const cleanPassword = password.trim(); 
-
-    try {
-      // Derive Key
-      const key = await deriveKeyFromPassword(cleanPassword);
-
-      // Verify against the test entry fetched earlier
-      if (testEntry) {
-        try {
-          // Attempt to decrypt the known entry. If this fails, the password is wrong.
-          await decryptData(testEntry.encrypted_password, testEntry.iv, key);
-          
-          // Success: Key is valid
-          await setMasterKey(key);
-        } catch (decryptionError) {
-          console.error("Decryption verification failed for entry ID:", testEntry.id);
-          throw new Error(t.incorrectPw);
-        }
-      } else {
-         // Should not happen in 'unlock' mode, but if so, just set the key
-         await setMasterKey(key);
-      }
-    } catch (err: any) {
-      setErrorMsg(err.message || "Failed to unlock.");
-      setPassword(''); // Clear password on failure
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 3. Logic for Setup (New User)
-  const handleSetup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg(null);
-
-    const cleanPassword = password.trim();
-    const cleanConfirm = confirmPassword.trim();
-
-    if (cleanPassword !== cleanConfirm) {
-      setErrorMsg(t.passwordMismatch);
-      return;
-    }
-    
-    if (cleanPassword.length < 6) {
-        setErrorMsg(t.passwordTooShort);
-        return;
-    }
-
-    setLoading(true);
-    try {
-      const key = await deriveKeyFromPassword(cleanPassword);
-      await setMasterKey(key); 
-    } catch (err) {
-      console.error(err);
-      setErrorMsg("Failed to generate key encryption.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 4. Logic for Emergency Reset
-  const handleEmergencyReset = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (!session?.user) {
-        alert("Session invalid. Please refresh.");
-        return;
-    }
-
-    const confirmed = window.confirm(t.resetConfirm);
-
-    if (!confirmed) return;
-
-    setLoading(true);
-    setErrorMsg(null);
-
-    try {
-      const { error } = await supabase
-        .from('entries')
-        .delete()
-        .eq('user_id', session.user.id);
-
-      if (error) throw error;
-
-      setMode('setup');
-      setTestEntry(null);
-      setPassword('');
-      setConfirmPassword('');
-      alert(t.resetSuccess);
-      
-    } catch (err: any) {
-      console.error("Reset Error:", err);
-      setErrorMsg("Reset failed: " + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (mode === 'checking') {
     return (
