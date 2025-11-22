@@ -37,13 +37,13 @@ export const HealthCheckModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
   const getScoreColor = (score: number) => {
       if (score >= 80) return 'text-green-500';
-      if (score >= 50) return 'text-amber-500';
+      if (score >= 60) return 'text-amber-500';
       return 'text-red-500';
   };
 
   const getScoreBg = (score: number) => {
       if (score >= 80) return 'bg-green-50 dark:bg-green-500/10 border-green-200 dark:border-green-900';
-      if (score >= 50) return 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-900';
+      if (score >= 60) return 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-900';
       return 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-900';
   };
 
@@ -56,8 +56,13 @@ export const HealthCheckModal: React.FC<Props> = ({ isOpen, onClose }) => {
           translations[language].health[s as keyof typeof translations['en']['health']] || s
       ).join(', ');
 
+      const displayStatus = result.isBreached ? t.breachedDesc : 
+                            result.isReused ? t.reusedDesc :
+                            result.isWeak ? (suggestionText || t.weakDesc) :
+                            t.safe; // Should rarely show "Safe" in warning/critical tabs
+
       return (
-          <div key={result.entryId} className="flex flex-col p-4 bg-white dark:bg-dark-800 border border-slate-100 dark:border-dark-700 rounded-xl hover:shadow-md transition mb-3">
+          <div key={result.entryId} className="flex flex-col p-4 bg-white dark:bg-dark-800 border border-slate-100 dark:border-dark-700 rounded-xl hover:shadow-md transition mb-3 animate-in fade-in slide-in-from-bottom-2">
               <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-3">
                       <div className={`p-2 rounded-lg ${
@@ -83,15 +88,15 @@ export const HealthCheckModal: React.FC<Props> = ({ isOpen, onClose }) => {
               <div className="pl-[52px] w-full">
                    <div className="flex items-center justify-between text-xs mb-1">
                        <span className="text-slate-500 dark:text-slate-400">
-                           {result.isBreached ? <span className="text-red-500 font-bold">{t.breachedDesc}</span> : 
-                            result.isReused ? <span className="text-amber-500">{t.reusedDesc}</span> : 
-                            suggestionText || t.weakDesc}
+                           {result.isBreached ? <span className="text-red-500 font-bold">{displayStatus}</span> : 
+                            result.isReused ? <span className="text-amber-500 font-medium">{displayStatus}</span> : 
+                            <span className="text-orange-500">{displayStatus}</span>}
                        </span>
                    </div>
                    <div className="h-1.5 w-full bg-slate-100 dark:bg-dark-700 rounded-full overflow-hidden">
                        <div 
                            className={`h-full rounded-full transition-all duration-500 ${
-                               result.score >= 80 ? 'bg-green-500' : result.score >= 50 ? 'bg-amber-500' : 'bg-red-500'
+                               result.score >= 80 ? 'bg-green-500' : result.score >= 60 ? 'bg-amber-500' : 'bg-red-500'
                            }`}
                            style={{ width: `${result.score}%` }}
                        />
@@ -223,7 +228,7 @@ export const HealthCheckModal: React.FC<Props> = ({ isOpen, onClose }) => {
                             {activeTab === 'critical' && (
                                 <div>
                                     {(Object.values(report.results) as HealthResult[]).filter(r => r.isBreached).length === 0 ? (
-                                        <div className="text-center py-8 text-slate-400 dark:text-slate-500">
+                                        <div className="text-center py-8 text-slate-400 dark:text-slate-500 animate-in fade-in zoom-in duration-300">
                                             <IconShieldCheck size={48} className="mx-auto mb-2 text-green-500" />
                                             <p>{t.noIssues}</p>
                                         </div>
@@ -235,14 +240,17 @@ export const HealthCheckModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
                             {activeTab === 'warnings' && (
                                 <div>
-                                    {(Object.values(report.results) as HealthResult[]).filter(r => !r.isBreached && r.score < 100).length === 0 ? (
-                                        <div className="text-center py-8 text-slate-400 dark:text-slate-500">
+                                    {(Object.values(report.results) as HealthResult[])
+                                        // FIX: Only show items that are actually Reused OR Weak (NOT just score < 100)
+                                        .filter(r => !r.isBreached && (r.isReused || r.isWeak))
+                                        .length === 0 ? (
+                                        <div className="text-center py-8 text-slate-400 dark:text-slate-500 animate-in fade-in zoom-in duration-300">
                                             <IconShieldCheck size={48} className="mx-auto mb-2 text-green-500" />
                                             <p>{t.noIssues}</p>
                                         </div>
                                     ) : (
                                         (Object.values(report.results) as HealthResult[])
-                                            .filter(r => !r.isBreached && r.score < 100)
+                                            .filter(r => !r.isBreached && (r.isReused || r.isWeak))
                                             .sort((a, b) => a.score - b.score)
                                             .map(renderEntryItem)
                                     )}

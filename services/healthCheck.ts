@@ -52,17 +52,36 @@ export const runSecurityScan = async (entries: DecryptedEntry[]): Promise<Securi
 
   // 1. Build frequency map for reuse detection
   entries.forEach(e => {
-    const count = passwordMap.get(e.password) || 0;
-    passwordMap.set(e.password, count + 1);
+    if (e.type === 'login') {
+        const count = passwordMap.get(e.password) || 0;
+        passwordMap.set(e.password, count + 1);
+    }
   });
 
   let totalScoreSum = 0;
   let breachedCount = 0;
   let reusedCount = 0;
   let weakCount = 0;
+  let scorableItems = 0;
 
   // 2. Analyze each entry
   await Promise.all(entries.map(async (entry) => {
+    // Skip non-login items from scoring usually, but let's keep them for basic checks if needed.
+    // For now, we focus logic mainly on passwords.
+    if (entry.type !== 'login') {
+        results[entry.id] = {
+            entryId: entry.id,
+            isBreached: false,
+            breachCount: 0,
+            isWeak: false,
+            isReused: false,
+            score: 100,
+            suggestions: []
+        };
+        return;
+    }
+
+    scorableItems++;
     const breachCount = await checkPwned(entry.password);
     const isBreached = breachCount > 0;
     
@@ -74,50 +93,36 @@ export const runSecurityScan = async (entries: DecryptedEntry[]): Promise<Securi
 
     const suggestions: string[] = [];
 
-    // --- REFINED WEAKNESS LOGIC ---
-    // It is NOT weak if it is very long (>14 chars), even if it lacks numbers/symbols.
-    // It IS weak if short (<8).
-    // It IS weak if medium length (<12) AND lacks complexity.
-    
-    let isWeak = false;
-
-    if (len < 8) {
-        isWeak = true;
-        suggestions.push('suggShort');
-    } else if (len < 14) {
-        // Medium length: Require some complexity
-        if (!hasNum && !hasSym) {
-            isWeak = true;
-            suggestions.push('suggSimple');
-        }
-    }
-    // Length >= 14 is generally considered strong against brute force even without symbols, 
-    // unless it's a common dictionary word (which we can't check easily offline without a huge dict).
-    // But we assume length is the primary factor for entropy here.
-
     // Scoring Logic
     let score = 0;
     
     // Base score on length (up to 60 points)
+    // 8 chars = 32pts, 12 chars = 48pts, 15 chars = 60pts
     score += Math.min(60, len * 4);
     
     // Complexity bonus (up to 40 points)
     if (hasNum) score += 10;
     if (hasSym) score += 15;
     if (hasUpper) score += 10;
-    if (len > 14) score += 5; // Bonus for length
+    if (len >= 16) score += 5; // Bonus for extra length
 
     // Penalties
-    if (isReused) score -= 30;
+    if (isReused) score -= 20; // Significant penalty but not zeroing
     if (isBreached) score = 0; // Immediate fail
 
     // Cap score
     score = Math.max(0, Math.min(100, score));
 
-    // Consistency check: If score is high, it shouldn't be marked 'Weak'
-    if (score > 60 && isWeak) isWeak = false;
-    if (score < 50 && !isWeak) isWeak = true;
+    // --- STRICT WEAKNESS DEFINITION ---
+    // A password is "Weak" if it scores < 60.
+    // 60-79 is "Fair" (Not weak, but not perfect).
+    // 80+ is "Strong".
+    let isWeak = score < 60;
 
+    // Add suggestions based on analysis, regardless of final score, for UI tips
+    if (len < 8) suggestions.push('suggShort');
+    else if (len < 12 && (!hasNum || !hasSym)) suggestions.push('suggSimple');
+    
     results[entry.id] = {
       entryId: entry.id,
       isBreached,
@@ -129,13 +134,17 @@ export const runSecurityScan = async (entries: DecryptedEntry[]): Promise<Securi
     };
 
     if (isBreached) breachedCount++;
-    if (isReused && !isBreached) reusedCount++;
-    if (isWeak && !isBreached && !isReused) weakCount++;
+    else {
+        // Only count as reused if NOT breached (breached takes priority)
+        if (isReused) reusedCount++;
+        // Only count as weak if NOT breached and NOT reused (to avoid double counting in tabs)
+        else if (isWeak) weakCount++;
+    }
     
     totalScoreSum += score;
   }));
 
-  const totalScore = entries.length > 0 ? Math.round(totalScoreSum / entries.length) : 100;
+  const totalScore = scorableItems > 0 ? Math.round(totalScoreSum / scorableItems) : 100;
 
   return {
     totalScore,
