@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useStore } from '../store/useStore';
 
 export const AutoLockHandler = () => {
@@ -44,5 +44,5 @@ export const AutoLockHandler = () => {
     };
   }, [isVaultUnlocked, autoLockDuration, lockVault]);
 
-  return null; // This component renders nothing
+  return null;
 };

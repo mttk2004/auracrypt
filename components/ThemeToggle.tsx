@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useStore } from '../store/useStore';
 import { IconSun, IconMoon } from '@tabler/icons-react';
 

@@ -2,7 +2,7 @@
 import { create } from 'zustand';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../supabaseClient';
-import { DecryptedEntry, DatabaseEntry, CategoryItem, DEFAULT_CATEGORIES } from '../types';
+import { DecryptedEntry, CategoryItem, DEFAULT_CATEGORIES } from '../types';
 import { exportKeyToString, importKeyFromString } from '../services/cryptoUtils';
 import { Language } from '../i18n/locales';
 

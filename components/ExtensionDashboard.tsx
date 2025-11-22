@@ -1,10 +1,10 @@
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { supabase } from '../supabaseClient';
 import { decryptData } from '../services/cryptoUtils';
 import { DecryptedEntry, DatabaseEntry } from '../types';
-import { IconLogin, IconCopy, IconExternalLink, IconSearch, IconX, IconShieldCheck } from '@tabler/icons-react';
+import { IconLogin, IconCopy, IconExternalLink, IconSearch, IconShieldCheck } from '@tabler/icons-react';
 
 declare var chrome: any;
 
@@ -46,6 +46,8 @@ export const ExtensionDashboard = () => {
         .from('entries')
         .select('*')
         .eq('user_id', user.id);
+
+      if (error) console.error("Failed to fetch entries", error);
 
       if (data) {
         const decryptedList: DecryptedEntry[] = [];
@@ -106,7 +108,7 @@ export const ExtensionDashboard = () => {
                         action: "FILL_CREDENTIALS",
                         username: entry.username,
                         password: entry.password
-                    }, (response: any) => {
+                    }, (_response: any) => {
                         if (chrome.runtime.lastError) {
                            // Script injection failed or blocked
                            addToast('error', "Could not access page inputs.");

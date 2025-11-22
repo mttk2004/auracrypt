@@ -1,6 +1,4 @@
 
-import React from 'react';
-
 export const SkeletonEntry = () => {
   return (
     <div className="bg-white dark:bg-dark-900 border border-slate-200 dark:border-dark-800 rounded-2xl p-5 shadow-sm flex flex-col h-[210px]">

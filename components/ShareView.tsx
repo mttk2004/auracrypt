@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { getSharedEntry } from '../services/shareService';
 import { SharedDataPayload } from '../types';
 import { useStore } from '../store/useStore';

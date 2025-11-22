@@ -1,11 +1,12 @@
-import React, { useEffect, useState, Suspense, lazy } from 'react';
+
+import { useEffect, useState, Suspense, lazy } from 'react';
 import { supabase } from './supabaseClient';
 import { useStore } from './store/useStore';
 import { Auth } from './components/Auth';
 import { VaultUnlock } from './components/VaultUnlock';
 import { AutoLockHandler } from './components/AutoLockHandler';
 import { ToastContainer } from './components/Toast';
-import { ShareView } from './components/ShareView'; // Import new component
+import { ShareView } from './components/ShareView';
 import { translations } from './i18n/locales';
 import { IconLoader2 } from '@tabler/icons-react';
 
@@ -96,7 +97,6 @@ const App = () => {
     return (
       <>
         <ToastContainer />
-        {/* Reuse Auth, it works fine in extension size due to responsive CSS */}
         <Auth /> 
       </>
     );
@@ -105,7 +105,6 @@ const App = () => {
   return (
     <>
       <ToastContainer />
-      {/* AutoLock is less relevant in Popup as popup closes when clicked away, but kept for consistency */}
       <AutoLockHandler /> 
       
       {!isVaultUnlocked && <VaultUnlock />}

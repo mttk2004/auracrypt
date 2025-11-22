@@ -25,11 +25,11 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave, entryToEd
 
   const {
       entryType, setEntryType,
-      serviceName, setServiceName,
+      serviceName, 
       category, setCategory,
       notes, setNotes,
       username, setUsername,
-      url, setUrl,
+      url, 
       password, setPassword,
       cardData, setCardData,
       identityData, setIdentityData,
@@ -37,9 +37,7 @@ export const EntryModal: React.FC<Props> = ({ isOpen, onClose, onSave, entryToEd
       loading,
       showPassword, setShowPassword,
       showGenerator, setShowGenerator,
-      genLength, setGenLength,
-      includeNum, setIncludeNum,
-      includeSym, setIncludeSym,
+      
       generatedPass, generatePassword, useGeneratedPassword,
       handleUrlChange, handleUrlBlur, handleServiceNameChange,
       handleSubmit

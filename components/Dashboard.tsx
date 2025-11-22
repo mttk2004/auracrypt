@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useMemo, Suspense, lazy } from 'react';
+
+import { useEffect, useState, useMemo, Suspense, lazy } from 'react';
 import { useStore } from '../store/useStore';
 import { supabase } from '../supabaseClient';
 import { DecryptedEntry } from '../types';

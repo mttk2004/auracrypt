@@ -17,7 +17,6 @@ interface Props {
 export const ShareModal: React.FC<Props> = ({ isOpen, onClose, entry }) => {
     const { language, addToast } = useStore();
     const t = translations[language].share;
-    const commonT = translations[language].common;
 
     const [config, setConfig] = useState<ShareConfig>({ views: 1, hours: 1 });
     const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);

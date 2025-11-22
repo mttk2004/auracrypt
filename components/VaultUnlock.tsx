@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useVaultAuth } from '../hooks/useVaultAuth';
 import { useStore } from '../store/useStore';
 import { translations } from '../i18n/locales';

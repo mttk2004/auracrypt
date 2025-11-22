@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { translations } from '../i18n/locales';
 import { SecurityReport, runSecurityScan, HealthResult } from '../services/healthCheck';
-import { IconX, IconActivity, IconLoader2, IconAlertTriangle, IconShieldCheck, IconAlertOctagon, IconCopy, IconArrowRight } from '@tabler/icons-react';
+import { IconX, IconActivity, IconLoader2, IconAlertTriangle, IconShieldCheck, IconAlertOctagon, IconCopy } from '@tabler/icons-react';
 
 interface Props {
   isOpen: boolean;

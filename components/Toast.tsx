@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { useStore } from '../store/useStore';
 import { IconCheck, IconAlertTriangle, IconInfoCircle, IconX } from '@tabler/icons-react';
 
