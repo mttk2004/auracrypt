@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useStore } from '../store/useStore';
 import { translations } from '../i18n/locales';

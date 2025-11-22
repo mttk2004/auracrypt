@@ -14,7 +14,7 @@ import {
     IconLock, IconAlertTriangle, IconCategory
 } from '@tabler/icons-react';
 
-// Lazy Load Modals
+// Lazy Load Modals to reduce initial bundle size
 const EntryModal = lazy(() => import('./EntryModal').then(m => ({ default: m.EntryModal })));
 const SettingsModal = lazy(() => import('./SettingsModal').then(m => ({ default: m.SettingsModal })));
 const HealthCheckModal = lazy(() => import('./HealthCheckModal').then(m => ({ default: m.HealthCheckModal })));
@@ -65,7 +65,8 @@ export const Dashboard = () => {
   // Calculate Stats
   const stats = useMemo(() => {
       const total = entries.length;
-      const weak = entries.filter(e => e.password.length < 8 || !/\d/.test(e.password)).length;
+      // Simple heuristic for dashboard: length < 8 or no numbers is considered "attention needed"
+      const weak = entries.filter(e => e.type === 'login' && (e.password.length < 8 || !/\d/.test(e.password))).length;
       return { total, weak };
   }, [entries]);
 
@@ -179,9 +180,9 @@ export const Dashboard = () => {
         </header>
 
         {/* List Area */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-8">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8 custom-scrollbar">
             
-            {/* Stats Area */}
+            {/* Stats Overview */}
             {!isLoadingData && entries.length > 0 && !searchTerm && selectedCategory === 'All' && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
                     <StatCard 
@@ -191,8 +192,8 @@ export const Dashboard = () => {
                         colorClass="bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400"
                     />
                     <StatCard 
-                        label="Security Checks" 
-                        value={stats.weak > 0 ? `${stats.weak} Weak` : "All Good"} 
+                        label="Weak Passwords" 
+                        value={stats.weak > 0 ? stats.weak : "Secure"} 
                         icon={IconAlertTriangle} 
                         colorClass={stats.weak > 0 ? "bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400" : "bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-400"}
                         onClick={() => setActiveModal('health')}
@@ -212,7 +213,6 @@ export const Dashboard = () => {
                     {[...Array(6)].map((_, i) => <SkeletonEntry key={i} />)}
                  </div>
             ) : entries.length === 0 && !searchTerm && selectedCategory === 'All' ? (
-                // ZERO-KNOWLEDGE INITIALIZATION ONBOARDING STATE
                 <div className="flex flex-col items-center justify-center h-full pb-20">
                     <div className="max-w-2xl w-full bg-white/60 dark:bg-dark-900/60 backdrop-blur-md border border-slate-200 dark:border-dark-800 rounded-3xl p-10 text-center animate-in fade-in zoom-in duration-500 shadow-2xl">
                         <div className="inline-flex p-5 rounded-full bg-amber-100 dark:bg-amber-500/10 mb-6 shadow-inner">
@@ -238,13 +238,11 @@ export const Dashboard = () => {
                     </div>
                 </div>
             ) : entries.length === 0 ? (
-                // NO SEARCH RESULTS STATE
                 <div className="flex flex-col items-center justify-center h-64 text-slate-500">
                     <IconFolder size={48} className="mb-4 opacity-20" />
                     <p>{t.noResults}</p>
                 </div>
             ) : (
-                // LIST STATE
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5 pb-10">
                     {entries.map(entry => (
                         <EntryCard 
@@ -260,6 +258,7 @@ export const Dashboard = () => {
         </div>
       </main>
 
+      {/* Lazy Loaded Modals Wrapped in Suspense */}
       <Suspense fallback={null}>
         {isModalOpen && (
             <EntryModal 
