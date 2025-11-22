@@ -1,5 +1,5 @@
 
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useStore } from '../store/useStore';
 import { translations } from '../i18n/locales';
 import { deriveKeyFromPassword, encryptData, decryptData } from '../services/cryptoUtils';

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { DecryptedEntry, CardData, IdentityData } from '../types';
 import { useStore } from '../store/useStore';
@@ -16,7 +15,7 @@ interface Props {
     onShare: (entry: DecryptedEntry) => void;
 }
 
-export const EntryCard: React.FC<Props> = ({ entry, onEdit, onDelete, onShare }) => {
+export const EntryCard = React.memo(({ entry, onEdit, onDelete, onShare }: Props) => {
     const { language, addToast } = useStore();
     const commonT = translations[language].common;
     const modalT = translations[language].modal;
@@ -250,4 +249,4 @@ export const EntryCard: React.FC<Props> = ({ entry, onEdit, onDelete, onShare })
             </div>
         </div>
     );
-};
+});

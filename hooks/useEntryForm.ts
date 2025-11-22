@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CreateEntryPayload, DecryptedEntry, EntryType, CardData, IdentityData } from '../types';
 import { useStore } from '../store/useStore';
 

@@ -222,26 +222,26 @@ export const HealthCheckModal: React.FC<Props> = ({ isOpen, onClose }) => {
                         <div className="min-h-[200px]">
                             {activeTab === 'critical' && (
                                 <div>
-                                    {Object.values(report.results).filter(r => r.isBreached).length === 0 ? (
+                                    {(Object.values(report.results) as HealthResult[]).filter(r => r.isBreached).length === 0 ? (
                                         <div className="text-center py-8 text-slate-400 dark:text-slate-500">
                                             <IconShieldCheck size={48} className="mx-auto mb-2 text-green-500" />
                                             <p>{t.noIssues}</p>
                                         </div>
                                     ) : (
-                                        Object.values(report.results).filter(r => r.isBreached).map(renderEntryItem)
+                                        (Object.values(report.results) as HealthResult[]).filter(r => r.isBreached).map(renderEntryItem)
                                     )}
                                 </div>
                             )}
 
                             {activeTab === 'warnings' && (
                                 <div>
-                                    {Object.values(report.results).filter(r => !r.isBreached && r.score < 100).length === 0 ? (
+                                    {(Object.values(report.results) as HealthResult[]).filter(r => !r.isBreached && r.score < 100).length === 0 ? (
                                         <div className="text-center py-8 text-slate-400 dark:text-slate-500">
                                             <IconShieldCheck size={48} className="mx-auto mb-2 text-green-500" />
                                             <p>{t.noIssues}</p>
                                         </div>
                                     ) : (
-                                        Object.values(report.results)
+                                        (Object.values(report.results) as HealthResult[])
                                             .filter(r => !r.isBreached && r.score < 100)
                                             .sort((a, b) => a.score - b.score)
                                             .map(renderEntryItem)

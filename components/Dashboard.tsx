@@ -1,17 +1,9 @@
-
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, Suspense, lazy } from 'react';
 import { useStore } from '../store/useStore';
 import { supabase } from '../supabaseClient';
 import { DecryptedEntry } from '../types';
 import { useVaultData } from '../hooks/useVaultData';
 
-// Components
-import { EntryModal } from './EntryModal';
-import { SettingsModal } from './SettingsModal';
-import { HealthCheckModal } from './HealthCheckModal';
-import { CategoryModal } from './CategoryModal';
-import { AboutModal } from './AboutModal';
-import { ShareModal } from './ShareModal';
 import { SkeletonEntry } from './SkeletonEntry';
 import { Sidebar } from './Sidebar';
 import { EntryCard } from './EntryCard';
@@ -21,6 +13,14 @@ import {
     IconSearch, IconPlus, IconFolder, IconShieldExclamation, IconMenu2,
     IconLock, IconAlertTriangle, IconCategory
 } from '@tabler/icons-react';
+
+// Lazy Load Modals
+const EntryModal = lazy(() => import('./EntryModal').then(m => ({ default: m.EntryModal })));
+const SettingsModal = lazy(() => import('./SettingsModal').then(m => ({ default: m.SettingsModal })));
+const HealthCheckModal = lazy(() => import('./HealthCheckModal').then(m => ({ default: m.HealthCheckModal })));
+const CategoryModal = lazy(() => import('./CategoryModal').then(m => ({ default: m.CategoryModal })));
+const AboutModal = lazy(() => import('./AboutModal').then(m => ({ default: m.AboutModal })));
+const ShareModal = lazy(() => import('./ShareModal').then(m => ({ default: m.ShareModal })));
 
 const StatCard = ({ label, value, icon: Icon, colorClass, onClick }: any) => (
     <div 
@@ -260,38 +260,52 @@ export const Dashboard = () => {
         </div>
       </main>
 
-      <EntryModal 
-        isOpen={isModalOpen} 
-        onClose={() => setModalOpen(false)} 
-        onSave={(data) => handleSaveEntry(data, entryToEdit)}
-        entryToEdit={entryToEdit}
-      />
+      <Suspense fallback={null}>
+        {isModalOpen && (
+            <EntryModal 
+                isOpen={isModalOpen} 
+                onClose={() => setModalOpen(false)} 
+                onSave={(data) => handleSaveEntry(data, entryToEdit)}
+                entryToEdit={entryToEdit}
+            />
+        )}
 
-      <ShareModal
-        isOpen={activeModal === 'share'}
-        onClose={() => setActiveModal(null)}
-        entry={entryToShare}
-      />
+        {activeModal === 'share' && (
+            <ShareModal
+                isOpen={activeModal === 'share'}
+                onClose={() => setActiveModal(null)}
+                entry={entryToShare}
+            />
+        )}
 
-      <SettingsModal 
-        isOpen={activeModal === 'settings'}
-        onClose={() => setActiveModal(null)}
-      />
+        {activeModal === 'settings' && (
+            <SettingsModal 
+                isOpen={activeModal === 'settings'}
+                onClose={() => setActiveModal(null)}
+            />
+        )}
 
-      <HealthCheckModal
-        isOpen={activeModal === 'health'}
-        onClose={() => setActiveModal(null)}
-      />
-      
-      <CategoryModal
-        isOpen={activeModal === 'category'}
-        onClose={() => setActiveModal(null)}
-      />
+        {activeModal === 'health' && (
+            <HealthCheckModal
+                isOpen={activeModal === 'health'}
+                onClose={() => setActiveModal(null)}
+            />
+        )}
+        
+        {activeModal === 'category' && (
+            <CategoryModal
+                isOpen={activeModal === 'category'}
+                onClose={() => setActiveModal(null)}
+            />
+        )}
 
-      <AboutModal
-        isOpen={activeModal === 'about'}
-        onClose={() => setActiveModal(null)}
-      />
+        {activeModal === 'about' && (
+            <AboutModal
+                isOpen={activeModal === 'about'}
+                onClose={() => setActiveModal(null)}
+            />
+        )}
+      </Suspense>
     </div>
   );
 };

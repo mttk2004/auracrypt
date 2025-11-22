@@ -1,17 +1,25 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { supabase } from './supabaseClient';
 import { useStore } from './store/useStore';
 import { Auth } from './components/Auth';
 import { VaultUnlock } from './components/VaultUnlock';
-import { Dashboard } from './components/Dashboard';
-import { ExtensionDashboard } from './components/ExtensionDashboard';
 import { AutoLockHandler } from './components/AutoLockHandler';
 import { ToastContainer } from './components/Toast';
 import { ShareView } from './components/ShareView'; // Import new component
 import { translations } from './i18n/locales';
+import { IconLoader2 } from '@tabler/icons-react';
+
+// Lazy Load Main Components
+const Dashboard = lazy(() => import('./components/Dashboard').then(module => ({ default: module.Dashboard })));
+const ExtensionDashboard = lazy(() => import('./components/ExtensionDashboard').then(module => ({ default: module.ExtensionDashboard })));
 
 declare var chrome: any;
+
+const LoadingScreen = () => (
+    <div className="h-full w-full flex items-center justify-center text-primary-600 dark:text-primary-500">
+        <IconLoader2 className="animate-spin" size={32} />
+    </div>
+);
 
 const App = () => {
   const { session, setSession, isVaultUnlocked, initializeVaultFromStorage, language, theme } = useStore();
@@ -103,7 +111,9 @@ const App = () => {
       {!isVaultUnlocked && <VaultUnlock />}
       
       {isVaultUnlocked && (
-          isExtension ? <ExtensionDashboard /> : <Dashboard />
+          <Suspense fallback={<LoadingScreen />}>
+              {isExtension ? <ExtensionDashboard /> : <Dashboard />}
+          </Suspense>
       )}
     </>
   );

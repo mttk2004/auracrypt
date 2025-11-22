@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { useStore } from '../store/useStore';
 import { deriveKeyFromPassword, decryptData } from '../services/cryptoUtils';
