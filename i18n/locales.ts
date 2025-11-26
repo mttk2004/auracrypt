@@ -11,6 +11,7 @@ export const translations = {
       confirm: "Are you sure?",
       initializing: "INITIALIZING SECURE ENVIRONMENT...",
       vaultLocked: "Vault Locked",
+      account: "Account"
     },
     auth: {
       title: "Secure Client-Side Encryption Vault",
@@ -58,6 +59,11 @@ export const translations = {
       settings: "Settings",
       healthCheck: "Health Check",
       about: "About",
+      statsTotal: "Total Vault Items",
+      statsWeak: "Weak Passwords",
+      statsCats: "Categories",
+      secure: "Secure",
+      tools: "Tools"
     },
     modal: {
       title: "Add New Entry",
@@ -199,6 +205,7 @@ export const translations = {
       confirm: "Bạn có chắc chắn không?",
       initializing: "ĐANG KHỞI TẠO MÔI TRƯỜNG BẢO MẬT...",
       vaultLocked: "Két Đã Khóa",
+      account: "Tài Khoản"
     },
     auth: {
       title: "Kho Lưu Trữ Mã Hóa Phía Client",
@@ -246,6 +253,11 @@ export const translations = {
       settings: "Cài đặt",
       healthCheck: "Sức Khỏe Mật Khẩu",
       about: "Giới Thiệu",
+      statsTotal: "Tổng Số Mục",
+      statsWeak: "Mật Khẩu Yếu",
+      statsCats: "Danh Mục",
+      secure: "An Toàn",
+      tools: "Công Cụ"
     },
     modal: {
       title: "Thêm Mục Mới",

@@ -187,20 +187,20 @@ export const Dashboard = () => {
             {!isLoadingData && entries.length > 0 && !searchTerm && selectedCategory === 'All' && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
                     <StatCard 
-                        label="Total Vault Items" 
+                        label={t.statsTotal} 
                         value={stats.total} 
                         icon={IconLock} 
                         colorClass="bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400"
                     />
                     <StatCard 
-                        label="Weak Passwords" 
-                        value={stats.weak > 0 ? stats.weak : "Secure"} 
+                        label={t.statsWeak} 
+                        value={stats.weak > 0 ? stats.weak : t.secure} 
                         icon={IconAlertTriangle} 
                         colorClass={stats.weak > 0 ? "bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400" : "bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-400"}
                         onClick={() => setActiveModal('health')}
                     />
                      <StatCard 
-                        label="Categories" 
+                        label={t.statsCats} 
                         value={categories.length} 
                         icon={IconCategory} 
                         colorClass="bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400"

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { User } from '@supabase/supabase-js';
 import { ThemeToggle } from './ThemeToggle';
@@ -14,12 +15,13 @@ interface Props {
 
 export const SidebarFooter: React.FC<Props> = ({ user, language, onOpenModal, onLogout }) => {
     const t = translations[language].dashboard;
+    const commonT = translations[language].common;
 
     return (
         <div className="p-4 border-t border-slate-200 dark:border-dark-800 bg-slate-50/50 dark:bg-dark-900/50">
             <div className="flex items-center justify-between mb-3 px-1">
                 <div className="flex flex-col min-w-0 mr-2">
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">ACCOUNT</span>
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">{commonT.account}</span>
                     <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate font-mono" title={user?.email}>
                         {user?.email}
                     </div>

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useStore } from '../store/useStore';
 import { translations } from '../i18n/locales';
@@ -84,7 +85,7 @@ export const Sidebar: React.FC<Props> = ({
                 ))}
 
                 <div className="my-4 border-t border-slate-200 dark:border-dark-800"></div>
-                <div className="px-3 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tools</div>
+                <div className="px-3 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t.tools}</div>
                 
                 <button 
                     onClick={() => { onOpenModal('health'); onCloseMobile(); }} 
