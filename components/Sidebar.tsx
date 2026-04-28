@@ -39,6 +39,8 @@ export const Sidebar: React.FC<Props> = ({
                 <button 
                     onClick={onCloseMobile}
                     className="md:hidden p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-dark-800 rounded-lg"
+                    aria-label="Close menu"
+                    title="Close menu"
                 >
                     <IconX size={24} />
                 </button>

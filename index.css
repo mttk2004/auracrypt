@@ -1,5 +1,33 @@
 @import "tailwindcss";
 
+@layer base {
+  button, 
+  [role="button"],
+  a,
+  input[type="submit"],
+  input[type="button"],
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="range"],
+  input[type="file"],
+  label,
+  select,
+  summary {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  input:disabled,
+  [aria-disabled="true"],
+  .cursor-not-allowed {
+    cursor: not-allowed;
+  }
+
+  a:not([href]) {
+    cursor: default;
+  }
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme {

@@ -24,9 +24,11 @@ const AboutModal = lazy(() => import('./AboutModal').then(m => ({ default: m.Abo
 const ShareModal = lazy(() => import('./ShareModal').then(m => ({ default: m.ShareModal })));
 
 const StatCard = ({ label, value, icon: Icon, colorClass, onClick }: any) => (
-    <div 
+    <button 
         onClick={onClick}
-        className="bg-white/60 dark:bg-dark-900/60 backdrop-blur-md border border-slate-200 dark:border-dark-800 p-4 rounded-2xl shadow-sm flex items-center gap-4 hover:scale-[1.02] transition-transform cursor-pointer group"
+        type={onClick ? "button" : undefined}
+        disabled={!onClick}
+        className={`w-full text-left bg-white/60 dark:bg-dark-900/60 backdrop-blur-md border border-slate-200 dark:border-dark-800 p-4 rounded-2xl shadow-sm flex items-center gap-4 transition-transform group ${onClick ? 'hover:scale-[1.02] cursor-pointer' : 'cursor-default'}`}
     >
         <div className={`p-3 rounded-xl ${colorClass} group-hover:scale-110 transition-transform`}>
             <Icon size={24} />
@@ -35,7 +37,7 @@ const StatCard = ({ label, value, icon: Icon, colorClass, onClick }: any) => (
             <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</p>
             <h4 className="text-2xl font-bold text-slate-900 dark:text-white">{value}</h4>
         </div>
-    </div>
+    </button>
 );
 
 export const Dashboard = () => {
@@ -157,6 +159,8 @@ export const Dashboard = () => {
                 <button 
                     onClick={() => setMobileMenuOpen(true)}
                     className="md:hidden p-2 -ml-2 text-slate-500 hover:bg-white/50 dark:hover:bg-dark-800 rounded-lg"
+                    aria-label="Open menu"
+                    title="Open menu"
                 >
                     <IconMenu2 size={24} />
                 </button>
@@ -166,14 +170,27 @@ export const Dashboard = () => {
                     <input 
                         type="text" 
                         placeholder={t.searchPlaceholder}
-                        className="w-full bg-white/60 dark:bg-dark-900/60 backdrop-blur-md border border-slate-200 dark:border-dark-700 rounded-xl py-3 pl-10 pr-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 placeholder:text-slate-500 dark:placeholder:text-slate-600 transition-all shadow-sm"
+                        aria-label={t.searchPlaceholder}
+                        className="w-full bg-white/60 dark:bg-dark-900/60 backdrop-blur-md border border-slate-200 dark:border-dark-700 rounded-xl py-3 pl-10 pr-10 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 placeholder:text-slate-500 dark:placeholder:text-slate-600 transition-all shadow-sm"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
+                    {searchTerm && (
+                        <button 
+                            onClick={() => setSearchTerm('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+                            aria-label="Clear search"
+                            title="Clear search"
+                        >
+                            <IconX size={16} />
+                        </button>
+                    )}
                 </div>
             </div>
             <button 
                 onClick={handleAddNewClick}
+                aria-label={t.addEntryBtn}
+                title={t.addEntryBtn}
                 className="ml-3 bg-primary-600 hover:bg-primary-700 dark:hover:bg-primary-500 text-white px-4 sm:px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary-500/20 hover:shadow-primary-500/40 hover:-translate-y-0.5 whitespace-nowrap"
             >
                 <IconPlus size={20} /> <span className="hidden sm:inline">{t.addEntryBtn}</span>

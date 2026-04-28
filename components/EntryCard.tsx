@@ -174,9 +174,10 @@ export const EntryCard = React.memo(({ entry, onEdit, onDelete, onShare }: Props
                     <div className="flex-1 min-w-0">
                         {renderContent()}
                     </div>
-                    <div className="flex gap-1 pl-2 shrink-0">
+                <div className="flex gap-1 pl-2 shrink-0">
                         <button 
                             onClick={copyToClipboard}
+                            aria-label={isCopied ? "Copied" : "Copy to clipboard"}
                             className={`p-2 rounded-lg border shadow-sm transition-all active:scale-95 ${isCopied 
                                 ? 'bg-green-500 border-green-500 text-white' 
                                 : 'bg-white dark:bg-dark-800 border-slate-200 dark:border-dark-700 text-slate-500 dark:text-slate-400 hover:bg-primary-600 hover:border-primary-600 hover:text-white'
@@ -187,6 +188,7 @@ export const EntryCard = React.memo(({ entry, onEdit, onDelete, onShare }: Props
                         </button>
                         <button 
                             onClick={() => setIsRevealed(!isRevealed)}
+                            aria-label={isRevealed ? "Hide sensitive data" : "Show sensitive data"}
                             className="p-2 hover:bg-slate-200 dark:hover:bg-dark-700 text-slate-400 dark:text-slate-500 rounded-lg transition-colors"
                             title={isRevealed ? "Hide" : "Show"}
                         >
@@ -205,6 +207,7 @@ export const EntryCard = React.memo(({ entry, onEdit, onDelete, onShare }: Props
                             href={entry.url} 
                             target="_blank" 
                             rel="noopener noreferrer"
+                            aria-label={`Open ${entry.service_name} website`}
                             className="flex items-center gap-1.5 text-xs font-bold text-primary-600 dark:text-primary-500 hover:underline group/link"
                         >
                             <IconExternalLink size={14} className="group-hover/link:scale-110 transition-transform" /> 
@@ -219,9 +222,10 @@ export const EntryCard = React.memo(({ entry, onEdit, onDelete, onShare }: Props
                 </div>
 
                 {/* Right: Manage Actions */}
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
                     <button 
                         onClick={() => onShare(entry)} 
+                        aria-label="Secure Share"
                         className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition" 
                         title="Secure Share"
                     >
@@ -229,6 +233,7 @@ export const EntryCard = React.memo(({ entry, onEdit, onDelete, onShare }: Props
                     </button>
                     <button 
                         onClick={() => onEdit(entry)} 
+                        aria-label={commonT.edit}
                         className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-slate-200 dark:hover:bg-dark-700 rounded transition" 
                         title={commonT.edit}
                     >
@@ -236,16 +241,13 @@ export const EntryCard = React.memo(({ entry, onEdit, onDelete, onShare }: Props
                     </button>
                     <button 
                         onClick={() => onDelete(entry.id)} 
+                        aria-label={commonT.delete}
                         className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition" 
                         title={commonT.delete}
                     >
                         <IconTrash size={16} />
                     </button>
                 </div>
-                 {/* Keep one visible if not hovering for mobile mostly, but css handles hover primarily */}
-                 <div className="flex md:hidden items-center gap-1">
-                    <button onClick={() => onEdit(entry)} className="p-1.5 text-slate-500"><IconPencil size={16} /></button>
-                 </div>
             </div>
         </div>
     );
