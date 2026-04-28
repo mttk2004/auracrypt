@@ -12,7 +12,7 @@ import { EntryCard } from './EntryCard';
 import { translations } from '../i18n/locales';
 import { 
     IconSearch, IconPlus, IconFolder, IconShieldExclamation, IconMenu2,
-    IconLock, IconAlertTriangle, IconCategory
+    IconLock, IconAlertTriangle, IconCategory, IconX
 } from '@tabler/icons-react';
 
 // Lazy Load Modals to reduce initial bundle size
