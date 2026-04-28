@@ -1,20 +1,71 @@
+# AuraCrypt
+
+AuraCrypt is a secure, end-to-end encrypted vault for managing your sensitive data. Built with modern web technologies, it ensures that your data remains private using robust Web Crypto API standards (PBKDF2 & AES-GCM).
+
+## 📸 ScreenShots
+
+![Dashboard](./public/screenshots/dashboard.png)
+
+*Hình 1: Giao diện quản lý chính (Dashboard)*
+
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+  <img src="./public/screenshots/auth.png" width="400" alt="Màn hình đăng nhập" />
 </div>
 
-# Run and deploy your AI Studio app
+## 🚀 Features
 
-This contains everything you need to run your app locally.
+- **End-to-End Encryption:** Your data is encrypted locally in the browser using AES-GCM before being stored.
+- **Secure Key Derivation:** Uses PBKDF2 with 100,000 iterations for secure master password derivation.
+- **Browser Extension Integration:** Includes a companion extension for seamless access across the web.
+- **Multi-language Support (i18n):** Accessible to a global audience.
+- **Sharing & Vault Health Checks:** Securely share entries and monitor your vault's health.
+- **Modern UI:** Full theming support (Dark/Light mode) powered by Tailwind CSS v4.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1r8vr9atluObPh2589LbCatvWe73mMqkf
+## 🛠 Tech Stack
 
-## Run Locally
+- **Frontend:** React, TypeScript, Vite
+- **Styling:** Tailwind CSS v4
+- **State Management:** Zustand
+- **Backend/Storage:** Supabase
+- **Cryptography:** Native Web Crypto API
 
-**Prerequisites:**  Node.js
+## 📦 Getting Started
 
+### Prerequisites
+
+- Node.js (v18 or higher recommended)
+- npm or yarn
+
+### Installation
 
 1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+   ```bash
+   npm install
+   ```
+
+2. Environment Variables:
+   Create a `.env` file in the root directory and add your Supabase credentials (since the project uses `supabaseClient.ts`):
+   ```env
+   VITE_SUPABASE_URL=your_supabase_project_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+### Building for Production & Extension
+
+To build the web application and browser extension:
+```bash
+npm run build
+```
+*(The output will be generated in the `dist` directory, which also includes `manifest.json` and `content.js` for the Chrome/Edge extension).*
+
+## 🔒 Security Architecture
+
+AuraCrypt is designed with a "zero-knowledge" architecture. The server never sees your plain-text data or your master password.
+- **Master Key:** Derived from your master password using PBKDF2.
+- **Data Encryption:** All vault entries are encrypted using AES-GCM 256-bit.
+- **Breach Checks:** Uses SHA-1 strictly for k-Anonymity checks (e.g., Have I Been Pwned integration).

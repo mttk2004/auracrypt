@@ -5,7 +5,7 @@
 
 // A static salt for the demo. In production, this should be unique per user and stored in DB.
 // Since the provided schema doesn't have a user_settings table, we use a constant app salt.
-const APP_SALT = "AURACRYPT_WEB_APP_FIXED_SALT_V1"; 
+const APP_SALT = "AURACRYPT_WEB_APP_FIXED_SALT_V1";
 
 function str2ab(str: string): Uint8Array {
   return new TextEncoder().encode(str);
@@ -41,7 +41,7 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
  */
 export const digestSHA1 = async (message: string): Promise<string> => {
   const msgBuffer = new TextEncoder().encode(message);
-  const hashBuffer = await crypto.subtle.digest('SHA-1', msgBuffer);
+  const hashBuffer = await crypto.subtle.digest('SHA-1', msgBuffer as unknown as BufferSource);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
 };
@@ -55,7 +55,7 @@ export const deriveKeyFromPassword = async (password: string): Promise<CryptoKey
 
   const keyMaterial = await window.crypto.subtle.importKey(
     "raw",
-    passwordBuffer,
+    passwordBuffer as unknown as BufferSource,
     "PBKDF2",
     false,
     ["deriveBits", "deriveKey"]
@@ -64,7 +64,7 @@ export const deriveKeyFromPassword = async (password: string): Promise<CryptoKey
   return window.crypto.subtle.deriveKey(
     {
       name: "PBKDF2",
-      salt: saltBuffer,
+      salt: saltBuffer as unknown as BufferSource,
       iterations: 100000,
       hash: "SHA-256",
     },
@@ -88,10 +88,10 @@ export const encryptData = async (
   const cipherBuffer = await window.crypto.subtle.encrypt(
     {
       name: "AES-GCM",
-      iv: iv,
+      iv: iv as unknown as BufferSource,
     },
     key,
-    encoded
+    encoded as unknown as BufferSource
   );
 
   return {
@@ -115,10 +115,10 @@ export const decryptData = async (
     const decryptedBuffer = await window.crypto.subtle.decrypt(
       {
         name: "AES-GCM",
-        iv: iv,
+        iv: iv as unknown as BufferSource,
       },
       key,
-      cipherBuffer
+      cipherBuffer as unknown as BufferSource
     );
     return ab2str(decryptedBuffer);
   } catch (e) {

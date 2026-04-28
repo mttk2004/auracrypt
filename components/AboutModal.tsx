@@ -2,9 +2,9 @@
 import React from 'react';
 import { useStore } from '../store/useStore';
 import { translations } from '../i18n/locales';
-import { 
-    IconX, IconShieldCheck, IconBrandReact, IconDatabase, 
-    IconLock, IconBrandGithub, IconMail, IconInfoCircle 
+import {
+    IconX, IconShieldCheck, IconBrandReact, IconDatabase,
+    IconLock, IconBrandGithub, IconMail, IconInfoCircle
 } from '@tabler/icons-react';
 
 interface Props {
@@ -28,7 +28,7 @@ export const AboutModal: React.FC<Props> = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="w-full max-w-2xl bg-white dark:bg-dark-900 border border-slate-200 dark:border-dark-800 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden transition-colors duration-300">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-dark-800">
            <div className="flex items-center gap-2 text-primary-600 dark:text-primary-500">
@@ -41,7 +41,7 @@ export const AboutModal: React.FC<Props> = ({ isOpen, onClose }) => {
         </div>
 
         <div className="p-6 overflow-y-auto custom-scrollbar space-y-8">
-            
+
             {/* Hero */}
             <div className="text-center">
                 <div className="inline-flex p-4 bg-primary-50 dark:bg-primary-900/20 rounded-2xl mb-4 text-primary-600 dark:text-primary-500">
@@ -74,7 +74,7 @@ export const AboutModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 </h4>
                 <div className="flex flex-wrap gap-3">
                     <TechBadge icon={IconBrandReact} label="React 19" />
-                    <TechBadge icon={IconBrandReact} label="Vite v7" />
+                    <TechBadge icon={IconBrandReact} label="Vite v8" />
                     <TechBadge icon={IconDatabase} label="Supabase" />
                     <TechBadge icon={IconLock} label="Web Crypto API (AES-GCM)" />
                     <TechBadge icon={IconShieldCheck} label="PBKDF2 Key Derivation" />
@@ -87,7 +87,7 @@ export const AboutModal: React.FC<Props> = ({ isOpen, onClose }) => {
             <div className="bg-slate-50 dark:bg-dark-950 rounded-xl p-6 border border-slate-200 dark:border-dark-800">
                 <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{t.authorTitle}</h4>
                 <div className="flex flex-col sm:flex-row gap-4">
-                    <a 
+                    <a
                         href="mailto:mttk2004@hotmail.com"
                         className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white dark:bg-dark-900 border border-slate-200 dark:border-dark-700 rounded-lg hover:border-primary-500 dark:hover:border-primary-500 transition text-slate-700 dark:text-slate-300 font-medium group"
                     >
@@ -99,8 +99,8 @@ export const AboutModal: React.FC<Props> = ({ isOpen, onClose }) => {
                             <div className="text-sm group-hover:text-primary-600 transition">mttk2004@hotmail.com</div>
                         </div>
                     </a>
-                    
-                    <a 
+
+                    <a
                         href="https://github.com/mttk2004"
                         target="_blank"
                         rel="noopener noreferrer"
