@@ -7,10 +7,11 @@ AuraCrypt is a secure, end-to-end encrypted vault for managing your sensitive da
 ![Dashboard](./public/screenshots/dashboard.png)
 *Giao diện quản lý chính (Dashboard)*
 
-<p align="center">
-  <img align="center" src="./public/screenshots/login.png" alt="Màn hình đăng nhập" height="200px"/>
-  <img align="center" src="./public/screenshots/shared.png" alt="Màn hình đăng nhập" height="200px" />
-</p>
+![Dashboard](./public/screenshots/login.png)
+*Giao diện đăng nhập*
+
+![Dashboard](./public/screenshots/shared.png)
+*Giao diện chia sẻ mật khẩu*
 
 ## 🚀 Features
 
